@@ -1,6 +1,6 @@
 # Supervibes ⚡️
 
-An opinionated workflow for using Claude Code to build native iOS apps alongside Xcode. Built by [Superwall](https://superwall.com).
+An opinionated workflow for using Claude Code to build native swift iOS apps, mostly without (but definitely alongside) Xcode. Built by [Superwall](https://superwall.com).
 
 ```
     /$$$$$$$
@@ -27,13 +27,12 @@ An opinionated workflow for using Claude Code to build native iOS apps alongside
 ## Features
 
 - 🚀 **Quick Setup** - Generate a complete iOS project in seconds
-- 📱 **Device Detection** - Automatically detects connected iOS devices
+- 📱 **Build to Device** - Automatically builds to connected iOS devices 
 - 🎨 **SwiftUI Templates** - Modern SwiftUI app structure out of the box
-- 🛠 **Build Scripts** - Pre-configured scripts for building, running, and testing
+- 🛠 **Build Scripts** - Scripts for building, running, and testing from the terminal
 - 🧪 **Test Configuration** - Separate schemes for development with unit and UI tests
-- 💾 **Smart Defaults** - Remembers your Team ID and device selection
-- 🎯 **XcodeGen Integration** - Clean project configuration with `project.yml`
-- 🤖 **Claude AI Ready** - Includes CLAUDE.md for AI-assisted development
+- 🎯 **XcodeGen Integration** - Create files outside of Xcode while maintaining interoperability
+- 🤖 **Claude AI Ready** - Battle tested Agents & CLAUDE.md files
 
 ## Generated Project Structure
 
