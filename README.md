@@ -39,14 +39,78 @@ A streamlined iOS project generator with XcodeGen integration, built by [Superwa
 
 ### Prerequisites
 
-1. **Xcode** - Make sure you have Xcode installed
-2. **XcodeGen** - Install via Homebrew:
-   ```bash
-   brew install xcodegen
-   ```
-3. **Apple Developer Account** - Required for device deployment
+Before using Supervibes, ensure you have all the required tools installed.
+
+**Quick check:** Run our prerequisites checker to see what's missing:
+```bash
+./check-prerequisites.sh
+```
+
+#### Manual Installation
+
+#### 1. **Xcode & Command Line Tools**
+Make sure Xcode is installed from the App Store and command line tools are set up:
+```bash
+xcode-select --install
+```
+
+#### 2. **Homebrew**
+The package manager for macOS. If not installed:
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+#### 3. **XcodeGen**
+For generating Xcode projects from YAML specifications:
+```bash
+brew install xcodegen
+xcodegen --version  # Verify installation
+```
+
+#### 4. **Swift Format**
+For consistent code formatting across generated projects:
+```bash
+brew install swift-format
+swift-format --version  # Verify installation
+```
+
+#### 5. **GitHub CLI**
+For repository operations and pull request management:
+```bash
+brew install gh
+gh auth login  # Follow the prompts to authenticate
+```
+
+#### 6. **Claude Code** (Optional but Recommended)
+For AI-powered development assistance:
+```bash
+npm install -g @anthropic-ai/claude-code
+claude -v  # Verify installation
+```
+
+If you don't have npm, install Node.js first:
+```bash
+brew install node
+```
+
+#### 7. **Apple Developer Setup**
+- Ensure you have an active Apple Developer account
+- Your development certificates should be properly configured
+
+To view available code signing identities:
+```bash
+security find-identity -v -p codesigning
+```
+
+You should see output like:
+```
+1) XXXXXXXXXX "Apple Development: Your Name (TEAMID)"
+2) XXXXXXXXXX "Apple Distribution: Your Name (TEAMID)"
+```
 
 ### Clone the Repository
+
+Once all prerequisites are installed:
 
 ```bash
 git clone https://github.com/superwall/supervibes.git
