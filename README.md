@@ -1,6 +1,6 @@
 # Supervibes 🎵
 
-A streamlined iOS project generator with XcodeGen integration, built by [Superwall](https://superwall.com).
+An opinionated workflow for using Claude Code to build native iOS apps alongside Xcode. Built by [Superwall](https://superwall.com).
 
 ```
     /$$$$$$$                                          
@@ -227,6 +227,16 @@ Each project includes:
 - **.claude/** - Configuration directory with specialized AI agents
 - Modern Swift development guidelines
 - XcodeGen documentation integration
+
+## Acknowledgments
+
+Supervibes stands on the shoulders of giants. Special thanks to:
+
+- **[XcodeGen](https://github.com/yonaskolb/XcodeGen)** by Yonas Kolb - The foundation of our project generation
+- **[SwiftFormat](https://github.com/nicklockwood/SwiftFormat)** by Nick Lockwood - Keeping our code beautifully formatted
+- **[SwiftLint](https://github.com/realm/SwiftLint)** by Realm - Enforcing Swift style and conventions
+- **[xcbeautify](https://github.com/tuist/xcbeautify)** by Tuist - Making Xcode output readable
+- **[Claude Code](https://claude.ai/code)** by Anthropic - AI-powered development assistance
 
 ## Contributing
 
