@@ -5,15 +5,9 @@ options:
   defaultConfig: Release
   postGenCommand: |
     # Format all Swift files with 2-space indentation
-    find . -name "*.swift" -type f | while read file; do
-      # Use swift-format if available
-      if command -v swift-format &> /dev/null; then
-        swift-format -i --indent-width 2 --swift-version $swiftVersion "$file"
-      # Fallback to swiftformat if available
-      elif command -v swiftformat &> /dev/null; then
-        swiftformat "$file" --indent 2 --swiftversion $swiftVersion
-      fi
-    done
+    if command -v swiftformat &> /dev/null; then
+      swiftformat . --indent 2 --swiftversion $swiftVersion
+    fi
 
 configs:
   Debug: debug

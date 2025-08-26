@@ -47,10 +47,10 @@ if [ "$BRIEF_MODE" = true ]; then
     check_command "brew" "Homebrew" ""
     check_command "xcodegen" "XcodeGen" ""
     
-    # Check for either swift-format or swiftformat
-    if ! command -v swift-format &> /dev/null && ! command -v swiftformat &> /dev/null; then
+    # Check for swiftformat
+    if ! command -v swiftformat &> /dev/null; then
         MISSING_DEPS=$((MISSING_DEPS + 1))
-        MISSING_LIST="${MISSING_LIST}  ${RED}✗${NC} Swift Format (swiftformat or swift-format)\n"
+        MISSING_LIST="${MISSING_LIST}  ${RED}✗${NC} SwiftFormat\n"
     fi
     
     check_command "gh" "GitHub CLI" ""
@@ -94,16 +94,13 @@ check_command "brew" "Homebrew" '/bin/bash -c "$(curl -fsSL https://raw.githubus
 # Check XcodeGen
 check_command "xcodegen" "XcodeGen" "brew install xcodegen"
 
-# Check Swift Format (either swift-format or swiftformat)
-if command -v swift-format &> /dev/null; then
-    echo -e "${GREEN}✓${NC} Swift Format is installed (swift-format)"
-    swift-format --version 2>/dev/null || echo "   Version: swift-format"
-elif command -v swiftformat &> /dev/null; then
-    echo -e "${GREEN}✓${NC} Swift Format is installed (swiftformat)"
+# Check SwiftFormat
+if command -v swiftformat &> /dev/null; then
+    echo -e "${GREEN}✓${NC} SwiftFormat is installed"
     swiftformat --version 2>/dev/null || echo "   Version: swiftformat"
 else
-    echo -e "${RED}✗${NC} Swift Format is not installed"
-    echo -e "  ${YELLOW}Install with: brew install swiftformat (or swift-format)${NC}"
+    echo -e "${RED}✗${NC} SwiftFormat is not installed"
+    echo -e "  ${YELLOW}Install with: brew install swiftformat${NC}"
     MISSING_DEPS=$((MISSING_DEPS + 1))
 fi
 
