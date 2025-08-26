@@ -7,24 +7,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 All build and test scripts are located in the `scripts/` directory:
 
 - To build only: `scripts/build.sh`
-- To build, install and run on device: `scripts/buildRun.sh`
-- To build and run the dev scheme: `scripts/buildRun.sh --dev` (uses different bundle ID and app name)
-- To install and run latest build: `scripts/run.sh`
-- To install and run latest dev build: `scripts/run.sh --dev`
+- To build and run: `scripts/run.sh`
+- To install latest build: `scripts/install.sh`
+- To use debug configuration: add `--debug` flag (e.g., `scripts/run.sh --debug`)
+- To use simulator: add `--simulator` flag (e.g., `scripts/run.sh --simulator`)
+- Flags can be combined: `scripts/run.sh --debug --simulator`
 
 ## Testing
 
-Tests are only configured in the `-dev` scheme for faster production builds:
+Tests are only configured in the debug scheme for faster production builds:
 
 - To run unit tests: `scripts/unit-test.sh`
 - To run UI tests: `scripts/ui-test.sh`
-- Both test scripts use the `-dev` scheme automatically
+- Both test scripts use the debug scheme and simulator automatically
 
 ## Project Configuration
 
 - Make changes to the Xcode project by updating `project.yml` and running `xcodegen generate`
 - The project uses XcodeGen for project generation - never edit the `.xcodeproj` directly
-- When you're done with a task, always run `scripts/buildRun.sh` to make sure it compiles and let the user test your work
+- When you're done with a task, always run `scripts/run.sh` to make sure it compiles and let the user test your work
 
 ## Project Overview
 
