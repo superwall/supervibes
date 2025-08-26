@@ -1,0 +1,145 @@
+name: $projectName
+options:
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+  defaultConfig: Release
+  postGenCommand: |
+    # Format all Swift files with 2-space indentation
+    find . -name "*.swift" -type f | while read file; do
+      # Use swift-format if available
+      if command -v swift-format &> /dev/null; then
+        swift-format -i --indent-width 2 --swift-version $swiftVersion "$file"
+      # Fallback to swiftformat if available
+      elif command -v swiftformat &> /dev/null; then
+        swiftformat "$file" --indent 2 --swiftversion $swiftVersion
+      fi
+    done
+
+configs:
+  Debug: debug
+  Release: release
+  DebugDev: debug
+  ReleaseDev: release
+
+schemes:
+  $projectName:
+    build:
+      targets:
+        $projectName: all
+    run:
+      config: Debug
+      debugEnabled: false
+      gpuFrameCaptureMode: disabled
+      gpuValidationMode: disabled
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+
+  $projectName-dev:
+    build:
+      targets:
+        $projectName: all
+      config: DebugDev
+    run:
+      config: DebugDev
+      debugEnabled: false
+      gpuFrameCaptureMode: disabled
+      gpuValidationMode: disabled
+    test:
+      config: DebugDev
+      targets:
+        - $projectNameTests
+        - $projectNameUITests
+    profile:
+      config: ReleaseDev
+    analyze:
+      config: DebugDev
+    archive:
+      config: ReleaseDev
+
+targets:
+  $projectName:
+    type: application
+    platform: iOS
+    deploymentTarget: "$deploymentTarget"
+    sources:
+      - path: $projectName
+        excludes:
+          - "**/*.xcodeproj"
+          - "**/*.xcworkspace"
+          - ".build"
+          - ".swiftpm"
+          - "*.playground"
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        MARKETING_VERSION: "$marketingVersion"
+        ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS: YES
+        ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES 
+        CURRENT_PROJECT_VERSION: "$projectVersion"
+        SWIFT_VERSION: "$swiftVersion"
+        IPHONEOS_DEPLOYMENT_TARGET: "$deploymentTarget"
+        DEVELOPMENT_TEAM: $developmentTeam
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "Apple Development"
+      configs:
+        Debug:
+          PRODUCT_BUNDLE_IDENTIFIER: $bundleIdentifier
+          PRODUCT_NAME: $displayName
+          INFOPLIST_KEY_CFBundleDisplayName: $displayName
+        Release:
+          PRODUCT_BUNDLE_IDENTIFIER: $bundleIdentifier
+          PRODUCT_NAME: $displayName
+          INFOPLIST_KEY_CFBundleDisplayName: $displayName
+        DebugDev:
+          PRODUCT_BUNDLE_IDENTIFIER: $bundleIdentifier.dev
+          PRODUCT_NAME: $displayName Dev
+          INFOPLIST_KEY_CFBundleDisplayName: $displayName Dev
+          INFOPLIST_KEY_UIApplicationTitle: $displayName Dev
+          ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon-Dev
+        ReleaseDev:
+          PRODUCT_BUNDLE_IDENTIFIER: $bundleIdentifier.dev
+          PRODUCT_NAME: $displayName Dev
+          INFOPLIST_KEY_CFBundleDisplayName: $displayName Dev
+          INFOPLIST_KEY_UIApplicationTitle: $displayName Dev
+          ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon-Dev
+
+  $projectNameTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "$deploymentTarget"
+    sources:
+      - path: $projectNameTests
+        optional: true
+    dependencies:
+      - target: $projectName
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: $bundleIdentifier.tests
+        DEVELOPMENT_TEAM: $developmentTeam
+        CODE_SIGN_STYLE: Automatic
+      configs:
+        Debug:
+          TEST_HOST: $(BUILT_PRODUCTS_DIR)/$displayName.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$displayName
+        DebugDev:
+          TEST_HOST: $(BUILT_PRODUCTS_DIR)/$displayName Dev.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$displayName Dev
+
+  $projectNameUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "$deploymentTarget"
+    sources:
+      - path: $projectNameUITests
+        optional: true
+    dependencies:
+      - target: $projectName
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+      PRODUCT_BUNDLE_IDENTIFIER: $bundleIdentifier.uitests
+      TEST_TARGET_NAME: $projectName
+      DEVELOPMENT_TEAM: $developmentTeam
+      CODE_SIGN_STYLE: Automatic

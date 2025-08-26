@@ -1,0 +1,27 @@
+# Generated projects
+projects/
+
+# Saved configuration
+supervibes.json
+
+# macOS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# IDE
+.idea/
+.vscode/
+*.xcworkspace
+xcuserdata/
+
+# Build artifacts
+.build/
+DerivedData/
+build/
+
+# Logs
+*.log

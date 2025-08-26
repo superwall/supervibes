@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(brew install:*)",
+      "Bash(mkdir:*)",
+      "Bash(gh repo create:*)",
+      "Bash(scripts/build.sh)",
+      "Bash(scripts/buildRun.sh)",
+      "Bash(scripts/buildRun.sh --dev)",
+      "Bash(scripts/run.sh)",
+      "WebSearch",
+      "Bash(xcodebuild:*)",
+      "Bash(xcrun:*)",
+      "Bash(open:*)"
+    ],
+    "deny": []
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "scripts/buildRun.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
