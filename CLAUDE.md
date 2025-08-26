@@ -36,10 +36,11 @@ This will:
 ```bash
 cd projects/<project-name>
 scripts/build.sh         # Build only
-scripts/buildRun.sh      # Build, install, and launch on device (production scheme)
-scripts/buildRun.sh --debug # Build, install, and launch on device (debug scheme)
-scripts/run.sh           # Install and launch latest build
-scripts/run.sh --debug   # Install and launch latest debug build
+scripts/run.sh           # Build and run the app
+scripts/run.sh --debug   # Build and run with debug configuration
+scripts/run.sh --simulator # Build and run on simulator
+scripts/install.sh       # Install and launch latest build
+scripts/install.sh --debug # Install and launch latest debug build
 scripts/unit-test.sh     # Run unit tests only (uses debug scheme)
 scripts/ui-test.sh       # Run UI tests only (uses debug scheme)
 ```

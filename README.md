@@ -172,12 +172,17 @@ All scripts are generated in the `scripts/` directory of your project:
 
 - **`build.sh`** - Builds the project in release mode
 - **`build.sh --debug`** - Builds the project in debug mode
-- **`buildRun.sh`** - Builds and runs on device (release mode)
-- **`buildRun.sh --debug`** - Builds and runs on device (debug mode with tests)
-- **`run.sh`** - Installs and runs the latest release build
-- **`run.sh --debug`** - Installs and runs the latest debug build
+- **`build.sh --simulator`** - Builds for simulator instead of device
+- **`run.sh`** - Builds and runs the app
+- **`run.sh --debug`** - Builds and runs with debug configuration
+- **`run.sh --simulator`** - Builds and runs on simulator
+- **`install.sh`** - Installs and launches the latest build
+- **`install.sh --debug`** - Installs and launches the latest debug build
+- **`install.sh --simulator`** - Installs to simulator
 - **`unit-test.sh`** - Runs unit tests (uses debug scheme)
 - **`ui-test.sh`** - Runs UI tests (uses debug scheme)
+
+Scripts support combining flags: `./run.sh --debug --simulator`
 
 ## Configuration
 

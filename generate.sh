@@ -244,68 +244,95 @@ while true; do
     fi
 done
 
-# Device selection (optional - for build/run scripts)
+# Device/Simulator selection
 echo ""
-echo -e "${GREEN}Device Configuration (optional)${NC}"
+echo -e "${GREEN}Build Target Configuration${NC}"
 echo -e "───────────────────"
-echo -e "${BLUE}Select a device for build/run scripts (or press Enter to skip)${NC}"
+echo -e "${BLUE}Select a device or simulator for build scripts${NC}"
 echo ""
-echo -e "${YELLOW}Loading devices...${NC}"
 
-# Get list of devices
+# Get list of devices and simulators
+echo -e "${YELLOW}Loading devices and simulators...${NC}"
 DEVICES_OUTPUT=$(xcrun xctrace list devices 2>/dev/null)
 
 # Clear the loading message
 echo -e "\033[1A\033[2K"
 
-# Extract only the devices section (not simulators or offline)
+# Extract physical devices
 DEVICES=$(echo "$DEVICES_OUTPUT" | awk '/== Devices ==/{flag=1; next} /== Devices Offline ==|== Simulators ==/{flag=0} flag' | grep -E '\([0-9A-F]{8}-[0-9A-F]{16}\)' || true)
 
-if [ -z "$DEVICES" ]; then
-    echo -e "${YELLOW}No connected devices found. Skipping device configuration.${NC}"
-    DEVICE_UDID=""
-else
-    # Create arrays for device names and UDIDs
-    declare -a DEVICE_NAMES
-    declare -a DEVICE_UDIDS
-    DEVICE_COUNT=0
-    
+# Extract simulators (filter for iPhone Pro models with highest version)
+SIMULATORS=$(echo "$DEVICES_OUTPUT" | awk '/== Simulators ==/{flag=1; next} /^==/{flag=0} flag' | grep "iPhone.*Pro" | sort -t'(' -k2 -rV | head -5 || true)
+
+# Create arrays for all options
+declare -a TARGET_NAMES
+declare -a TARGET_IDS
+declare -a TARGET_TYPES
+TARGET_COUNT=0
+
+# Add physical devices
+if [ -n "$DEVICES" ]; then
+    echo -e "${CYAN}Physical Devices:${NC}"
     while IFS= read -r line; do
         if [ -n "$line" ]; then
-            # Extract device name (everything before the last parenthesis)
             DEVICE_NAME=$(echo "$line" | sed -E 's/ \([0-9A-F]{8}-[0-9A-F]{16}\)$//')
-            # Extract UDID (the hex string in parentheses)
             UDID=$(echo "$line" | grep -oE '[0-9A-F]{8}-[0-9A-F]{16}')
             
             if [ -n "$UDID" ]; then
-                DEVICE_COUNT=$((DEVICE_COUNT + 1))
-                DEVICE_NAMES+=("$DEVICE_NAME")
-                DEVICE_UDIDS+=("$UDID")
-                echo -e "  ${YELLOW}$DEVICE_COUNT)${NC} $DEVICE_NAME"
+                TARGET_COUNT=$((TARGET_COUNT + 1))
+                TARGET_NAMES+=("$DEVICE_NAME")
+                TARGET_IDS+=("$UDID")
+                TARGET_TYPES+=("device")
+                echo -e "  ${YELLOW}$TARGET_COUNT)${NC} 📱 $DEVICE_NAME"
             fi
         fi
     done <<< "$DEVICES"
-    
-    if [ $DEVICE_COUNT -eq 0 ]; then
-        echo -e "${YELLOW}No valid devices found. Skipping device configuration.${NC}"
-        DEVICE_UDID=""
-    else
-        echo ""
-        echo -e "${BLUE}Select device number (1-$DEVICE_COUNT) or press Enter to skip:${NC} "
-        read -r DEVICE_SELECTION
-        
-        if [ -z "$DEVICE_SELECTION" ]; then
-            echo -e "${YELLOW}Skipping device configuration${NC}"
-            DEVICE_UDID=""
-        elif [[ "$DEVICE_SELECTION" =~ ^[0-9]+$ ]] && [ "$DEVICE_SELECTION" -ge 1 ] && [ "$DEVICE_SELECTION" -le "$DEVICE_COUNT" ]; then
-            SELECTED_INDEX=$((DEVICE_SELECTION - 1))
-            DEVICE_UDID="${DEVICE_UDIDS[$SELECTED_INDEX]}"
-            SELECTED_DEVICE_NAME="${DEVICE_NAMES[$SELECTED_INDEX]}"
-            echo -e "${GREEN}Selected: $SELECTED_DEVICE_NAME${NC}"
-        else
-            echo -e "${RED}Invalid selection. Skipping device configuration.${NC}"
-            DEVICE_UDID=""
+fi
+
+# Add simulators
+if [ -n "$SIMULATORS" ]; then
+    [ $TARGET_COUNT -gt 0 ] && echo ""
+    echo -e "${CYAN}Simulators:${NC}"
+    while IFS= read -r line; do
+        if [ -n "$line" ]; then
+            # Extract simulator name and ID
+            SIM_NAME=$(echo "$line" | sed -E 's/ \([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\)$//')
+            SIM_ID=$(echo "$line" | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}')
+            
+            if [ -n "$SIM_ID" ]; then
+                TARGET_COUNT=$((TARGET_COUNT + 1))
+                TARGET_NAMES+=("$SIM_NAME")
+                TARGET_IDS+=("$SIM_ID")
+                TARGET_TYPES+=("simulator")
+                echo -e "  ${YELLOW}$TARGET_COUNT)${NC} 📲 $SIM_NAME"
+            fi
         fi
+    done <<< "$SIMULATORS"
+fi
+
+if [ $TARGET_COUNT -eq 0 ]; then
+    echo -e "${YELLOW}No devices or simulators found. Using default simulator.${NC}"
+    DEVICE_UDID=""
+    DEVICE_TYPE="simulator"
+else
+    echo ""
+    echo -e "${BLUE}Select target (1-$TARGET_COUNT) or press Enter for default simulator:${NC} "
+    read -r TARGET_SELECTION
+    
+    if [ -z "$TARGET_SELECTION" ]; then
+        echo -e "${YELLOW}Using default simulator${NC}"
+        DEVICE_UDID=""
+        DEVICE_TYPE="simulator"
+    elif [[ "$TARGET_SELECTION" =~ ^[0-9]+$ ]] && [ "$TARGET_SELECTION" -ge 1 ] && [ "$TARGET_SELECTION" -le "$TARGET_COUNT" ]; then
+        SELECTED_INDEX=$((TARGET_SELECTION - 1))
+        DEVICE_UDID="${TARGET_IDS[$SELECTED_INDEX]}"
+        SELECTED_DEVICE_NAME="${TARGET_NAMES[$SELECTED_INDEX]}"
+        DEVICE_TYPE="${TARGET_TYPES[$SELECTED_INDEX]}"
+        echo -e "${GREEN}Selected: $SELECTED_DEVICE_NAME ($DEVICE_TYPE)${NC}"
+    else
+        echo -e "${YELLOW}Invalid selection. Using default simulator.${NC}"
+        DEVICE_UDID=""
+        DEVICE_TYPE="simulator"
     fi
 fi
 
@@ -386,12 +413,18 @@ sed -i '' "s/\$projectNameUITests/${PROJECT_NAME}UITests/g" "$OUTPUT_FILE"
 
 echo -e "${GREEN}✓ Configuration generated successfully!${NC}"
 
-# Generate build and run scripts (always generate, use simulator if no device)
+# Generate build and run scripts
 echo ""
 echo -e "${GREEN}Generating scripts...${NC}"
 
-# Default to simulator if no device selected
-SCRIPT_DEVICE_UDID="${DEVICE_UDID:-booted}"
+# Set device/simulator configuration
+if [ -z "$DEVICE_UDID" ]; then
+    SCRIPT_DEVICE_UDID="booted"
+    SCRIPT_DEVICE_TYPE="simulator"
+else
+    SCRIPT_DEVICE_UDID="$DEVICE_UDID"
+    SCRIPT_DEVICE_TYPE="${DEVICE_TYPE:-device}"
+fi
     
 # Check if scripts-template folder exists
 if [ -d "scripts-template" ]; then
@@ -413,6 +446,7 @@ if [ -d "scripts-template" ]; then
             sed -i '' "s/\$displayName/$DISPLAY_NAME/g" "$target"
             sed -i '' "s/\$bundleIdentifier/$BUNDLE_ID/g" "$target"
             sed -i '' "s/\$deviceUDID/$SCRIPT_DEVICE_UDID/g" "$target"
+            sed -i '' "s/\$deviceType/$SCRIPT_DEVICE_TYPE/g" "$target"
             
             # Make executable
             chmod +x "$target"
@@ -420,8 +454,10 @@ if [ -d "scripts-template" ]; then
     done
     
     echo -e "${GREEN}✓ Scripts generated in scripts/ folder!${NC}"
-    if [ -z "$DEVICE_UDID" ]; then
-        echo -e "${YELLOW}Note: Scripts will use simulator (no device was selected)${NC}"
+    if [ "$SCRIPT_DEVICE_TYPE" = "simulator" ]; then
+        echo -e "${CYAN}Note: Scripts configured for simulator${NC}"
+    else
+        echo -e "${CYAN}Note: Scripts configured for physical device${NC}"
     fi
 else
     echo -e "${YELLOW}Warning: scripts-template folder not found${NC}"
@@ -431,10 +467,14 @@ echo ""
 echo -e "Next steps:"
 echo -e "1. Review the generated ${YELLOW}$OUTPUT_FILE${NC}"
 echo -e "2. Run: ${YELLOW}cd $PROJECT_DIR && scripts/build.sh${NC} to build only"
-echo -e "3. Run: ${YELLOW}cd $PROJECT_DIR && scripts/buildRun.sh${NC} to build and run"
-echo -e "4. Run: ${YELLOW}cd $PROJECT_DIR && scripts/run.sh${NC} to install and launch the last build"
+echo -e "3. Run: ${YELLOW}cd $PROJECT_DIR && scripts/run.sh${NC} to build and run"
+echo -e "4. Run: ${YELLOW}cd $PROJECT_DIR && scripts/install.sh${NC} to install the last build"
 echo -e "5. Run: ${YELLOW}cd $PROJECT_DIR && scripts/unit-test.sh${NC} to run unit tests"
 echo -e "6. Run: ${YELLOW}cd $PROJECT_DIR && scripts/ui-test.sh${NC} to run UI tests"
+if [ "$SCRIPT_DEVICE_TYPE" = "simulator" ]; then
+    echo -e ""
+    echo -e "${CYAN}Note: Add --simulator flag to use simulator instead of default${NC}"
+fi
 echo ""
 
 # Create initial Swift files and directories
