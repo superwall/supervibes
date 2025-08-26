@@ -4,15 +4,15 @@
 UDID=$deviceUDID
 BUNDLE_ID=$bundleIdentifier
 
-# Check for --dev flag to use dev build
-if [[ "$1" == "--dev" ]]; then
-    PRODUCT_NAME="$displayName Dev"
-    BUNDLE_ID="$bundleIdentifier.dev"
-    CONFIG="DebugDev"
-    echo "🔧 Using development build"
-else
+# Check for --debug flag to use debug build
+if [[ "$1" == "--debug" ]]; then
     PRODUCT_NAME="$displayName"
     CONFIG="Debug"
+    echo "🔧 Using debug build"
+else
+    PRODUCT_NAME="$displayName"
+    CONFIG="Release"
+    echo "🚀 Using release build"
 fi
 
 # Check if build exists

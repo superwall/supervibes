@@ -4,17 +4,17 @@
 UDID=$deviceUDID
 BUNDLE_ID=$bundleIdentifier
 
-# Check for --dev flag to use dev scheme
-if [[ "$1" == "--dev" ]]; then
-    SCHEME="$projectName-dev"
-    BUNDLE_ID="$bundleIdentifier.dev"
-    PRODUCT_NAME="$displayName Dev"
-    CONFIG="DebugDev"
-    echo "🔧 Using development scheme: $SCHEME"
+# Check for --debug flag to use debug scheme
+if [[ "$1" == "--debug" ]]; then
+    SCHEME="$projectName-debug"
+    PRODUCT_NAME="$displayName"
+    CONFIG="Debug"
+    echo "🔧 Using debug scheme: $SCHEME (with tests)"
 else
     SCHEME="$projectName"
     PRODUCT_NAME="$displayName"
-    CONFIG="Debug"
+    CONFIG="Release"
+    echo "🚀 Using release scheme: $SCHEME"
 fi
 
 echo "🧞‍♂️ Generating xcode project..."

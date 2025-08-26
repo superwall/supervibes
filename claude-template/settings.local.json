@@ -22,7 +22,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "scripts/buildRun.sh"
+            "command": "afplay /System/Library/Sounds/Blow.aiff"
           }
         ]
       }

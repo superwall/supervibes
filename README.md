@@ -171,12 +171,14 @@ projects/YourProject/
 
 All scripts are generated in the `scripts/` directory of your project:
 
-- **`build.sh`** - Builds the project without running
-- **`buildRun.sh`** - Builds and immediately runs on selected device
-- **`buildRun.sh --dev`** - Builds and runs the development scheme (with tests)
-- **`run.sh`** - Installs and runs the latest build without rebuilding
-- **`unit-test.sh`** - Runs unit tests only
-- **`ui-test.sh`** - Runs UI tests only
+- **`build.sh`** - Builds the project in release mode
+- **`build.sh --debug`** - Builds the project in debug mode
+- **`buildRun.sh`** - Builds and runs on device (release mode)
+- **`buildRun.sh --debug`** - Builds and runs on device (debug mode with tests)
+- **`run.sh`** - Installs and runs the latest release build
+- **`run.sh --debug`** - Installs and runs the latest debug build
+- **`unit-test.sh`** - Runs unit tests (uses debug scheme)
+- **`ui-test.sh`** - Runs UI tests (uses debug scheme)
 
 ## Configuration
 
@@ -184,14 +186,15 @@ All scripts are generated in the `scripts/` directory of your project:
 
 Two schemes are generated:
 
-1. **Production** (`YourProject`) - Optimized for App Store releases
-   - No test targets included
-   - Release configuration for archives
+1. **Release** (`YourProject`) - Optimized for production
+   - No test targets
+   - Release configuration
+   - Used by default in scripts
    
-2. **Development** (`YourProject-dev`) - For development and testing
+2. **Debug** (`YourProject-debug`) - For development and testing
    - Includes unit and UI test targets
-   - Different bundle ID (`.dev` suffix)
-   - Different app name (adds "Dev" suffix)
+   - Debug configuration with symbols
+   - Used with `--debug` flag in scripts
 
 ### Saved Settings
 

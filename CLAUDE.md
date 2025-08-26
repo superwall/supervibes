@@ -37,21 +37,21 @@ This will:
 cd projects/<project-name>
 scripts/build.sh         # Build only
 scripts/buildRun.sh      # Build, install, and launch on device (production scheme)
-scripts/buildRun.sh --dev # Build, install, and launch on device (development scheme)
+scripts/buildRun.sh --debug # Build, install, and launch on device (debug scheme)
 scripts/run.sh           # Install and launch latest build
-scripts/run.sh --dev     # Install and launch latest dev build
-scripts/unit-test.sh     # Run unit tests only (uses -dev scheme)
-scripts/ui-test.sh       # Run UI tests only (uses -dev scheme)
+scripts/run.sh --debug   # Install and launch latest debug build
+scripts/unit-test.sh     # Run unit tests only (uses debug scheme)
+scripts/ui-test.sh       # Run UI tests only (uses debug scheme)
 ```
 
-The `--dev` flag:
-- Uses the `<project>-dev` scheme
-- Installs with `.dev` bundle identifier suffix  
-- Shows as "<AppName> Dev" on device
+The `--debug` flag:
+- Uses the `<project>-debug` scheme
+- Builds in Debug configuration with test support
+- Enables debugging symbols
 
 ### Testing Configuration
-- **Production scheme**: No tests configured (optimized for running)
-- **Development scheme (-dev)**: Includes both unit and UI tests
+- **Release scheme**: No tests configured (optimized for production)
+- **Debug scheme (-debug)**: Includes both unit and UI tests
 - Tests use the correct module name (display name without spaces)
 - TEST_HOST properly configured for unit tests to link with main app
 

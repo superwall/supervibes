@@ -2,13 +2,13 @@
 
 # Unit test script for $displayName app
 UDID=$deviceUDID
-SCHEME="$projectName-dev"
+SCHEME="$projectName-debug"
 
 echo "🧪 Running unit tests..."
 
 xcodebuild test \
   -scheme "$SCHEME" \
-  -configuration DebugDev \
+  -configuration Debug \
   -sdk iphoneos \
   -destination "platform=iOS,id=$UDID" \
   -only-testing:"$projectNameTests" \

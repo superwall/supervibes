@@ -18,8 +18,6 @@ options:
 configs:
   Debug: debug
   Release: release
-  DebugDev: debug
-  ReleaseDev: release
 
 schemes:
   $projectName:
@@ -27,38 +25,37 @@ schemes:
       targets:
         $projectName: all
     run:
-      config: Debug
+      config: Release
       debugEnabled: false
       gpuFrameCaptureMode: disabled
       gpuValidationMode: disabled
     profile:
       config: Release
     analyze:
-      config: Debug
+      config: Release
     archive:
       config: Release
 
-  $projectName-dev:
+  $projectName-debug:
     build:
       targets:
         $projectName: all
-      config: DebugDev
     run:
-      config: DebugDev
-      debugEnabled: false
+      config: Debug
+      debugEnabled: true
       gpuFrameCaptureMode: disabled
       gpuValidationMode: disabled
     test:
-      config: DebugDev
+      config: Debug
       targets:
         - $projectNameTests
         - $projectNameUITests
     profile:
-      config: ReleaseDev
+      config: Debug
     analyze:
-      config: DebugDev
+      config: Debug
     archive:
-      config: ReleaseDev
+      config: Debug
 
 targets:
   $projectName:
@@ -85,27 +82,9 @@ targets:
         DEVELOPMENT_TEAM: $developmentTeam
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_IDENTITY: "Apple Development"
-      configs:
-        Debug:
-          PRODUCT_BUNDLE_IDENTIFIER: $bundleIdentifier
-          PRODUCT_NAME: $displayName
-          INFOPLIST_KEY_CFBundleDisplayName: $displayName
-        Release:
-          PRODUCT_BUNDLE_IDENTIFIER: $bundleIdentifier
-          PRODUCT_NAME: $displayName
-          INFOPLIST_KEY_CFBundleDisplayName: $displayName
-        DebugDev:
-          PRODUCT_BUNDLE_IDENTIFIER: $bundleIdentifier.dev
-          PRODUCT_NAME: $displayName Dev
-          INFOPLIST_KEY_CFBundleDisplayName: $displayName Dev
-          INFOPLIST_KEY_UIApplicationTitle: $displayName Dev
-          ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon-Dev
-        ReleaseDev:
-          PRODUCT_BUNDLE_IDENTIFIER: $bundleIdentifier.dev
-          PRODUCT_NAME: $displayName Dev
-          INFOPLIST_KEY_CFBundleDisplayName: $displayName Dev
-          INFOPLIST_KEY_UIApplicationTitle: $displayName Dev
-          ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon-Dev
+        PRODUCT_BUNDLE_IDENTIFIER: $bundleIdentifier
+        PRODUCT_NAME: $displayName
+        INFOPLIST_KEY_CFBundleDisplayName: $displayName
 
   $projectNameTests:
     type: bundle.unit-test
@@ -122,11 +101,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: $bundleIdentifier.tests
         DEVELOPMENT_TEAM: $developmentTeam
         CODE_SIGN_STYLE: Automatic
-      configs:
-        Debug:
-          TEST_HOST: $(BUILT_PRODUCTS_DIR)/$displayName.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$displayName
-        DebugDev:
-          TEST_HOST: $(BUILT_PRODUCTS_DIR)/$displayName Dev.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$displayName Dev
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/$displayName.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$displayName
 
   $projectNameUITests:
     type: bundle.ui-testing
