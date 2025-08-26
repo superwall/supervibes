@@ -157,8 +157,8 @@ projects/YourProject/
 ├── YourProjectUITests/         # UI tests  
 ├── scripts/                    # Automation scripts
 │   ├── build.sh               # Build only
-│   ├── buildRun.sh            # Build and run on device
-│   ├── run.sh                 # Run latest build
+│   ├── run.sh                 # Build and run on device
+│   ├── install.sh             # Install and run latest build
 │   ├── unit-test.sh           # Run unit tests
 │   └── ui-test.sh             # Run UI tests
 ├── CLAUDE.md                   # Project documentation for Claude AI

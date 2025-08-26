@@ -21,33 +21,41 @@ SUPERVIBES_JSON="supervibes.json"
 COLORS=("red" "blue" "green" "yellow" "purple" "orange" "pink" "cyan" "magenta" "lime")
 ANIMALS=("bear" "wolf" "fox" "hawk" "eagle" "tiger" "lion" "panda" "koala" "otter")
 
-# Function to load saved values from xclaude.json
+# Function to load saved values from supervibes.json
 load_saved_values() {
     if [ -f "$SUPERVIBES_JSON" ]; then
         if command -v jq &> /dev/null; then
             SAVED_TEAM_ID=$(jq -r '.teamId // empty' "$SUPERVIBES_JSON" 2>/dev/null)
             SAVED_DEVICE_UDID=$(jq -r '.deviceUdid // empty' "$SUPERVIBES_JSON" 2>/dev/null)
             SAVED_DEVICE_NAME=$(jq -r '.deviceName // empty' "$SUPERVIBES_JSON" 2>/dev/null)
+            SAVED_SIMULATOR_ID=$(jq -r '.simulatorId // empty' "$SUPERVIBES_JSON" 2>/dev/null)
+            SAVED_SIMULATOR_NAME=$(jq -r '.simulatorName // empty' "$SUPERVIBES_JSON" 2>/dev/null)
         else
             # Fallback to grep if jq not available
             SAVED_TEAM_ID=$(grep -o '"teamId"[[:space:]]*:[[:space:]]*"[^"]*"' "$SUPERVIBES_JSON" 2>/dev/null | cut -d'"' -f4)
             SAVED_DEVICE_UDID=$(grep -o '"deviceUdid"[[:space:]]*:[[:space:]]*"[^"]*"' "$SUPERVIBES_JSON" 2>/dev/null | cut -d'"' -f4)
             SAVED_DEVICE_NAME=$(grep -o '"deviceName"[[:space:]]*:[[:space:]]*"[^"]*"' "$SUPERVIBES_JSON" 2>/dev/null | cut -d'"' -f4)
+            SAVED_SIMULATOR_ID=$(grep -o '"simulatorId"[[:space:]]*:[[:space:]]*"[^"]*"' "$SUPERVIBES_JSON" 2>/dev/null | cut -d'"' -f4)
+            SAVED_SIMULATOR_NAME=$(grep -o '"simulatorName"[[:space:]]*:[[:space:]]*"[^"]*"' "$SUPERVIBES_JSON" 2>/dev/null | cut -d'"' -f4)
         fi
     fi
 }
 
-# Function to save values to xclaude.json
+# Function to save values to supervibes.json
 save_values() {
     local team_id="$1"
     local device_udid="$2"
     local device_name="$3"
+    local sim_id="$4"
+    local sim_name="$5"
     
     cat > "$SUPERVIBES_JSON" << EOF
 {
   "teamId": "$team_id",
   "deviceUdid": "$device_udid",
-  "deviceName": "$device_name"
+  "deviceName": "$device_name",
+  "simulatorId": "$sim_id",
+  "simulatorName": "$sim_name"
 }
 EOF
 }
@@ -244,12 +252,10 @@ while true; do
     fi
 done
 
-# Device/Simulator selection
+# Build Target Configuration - Two phase selection
 echo ""
 echo -e "${GREEN}Build Target Configuration${NC}"
 echo -e "───────────────────"
-echo -e "${BLUE}Select a device or simulator for build scripts${NC}"
-echo ""
 
 # Get list of devices and simulators
 echo -e "${YELLOW}Loading devices and simulators...${NC}"
@@ -258,81 +264,104 @@ DEVICES_OUTPUT=$(xcrun xctrace list devices 2>/dev/null)
 # Clear the loading message
 echo -e "\033[1A\033[2K"
 
+# PHASE 1: Physical Device Selection (optional)
+echo -e "${CYAN}Step 1: Physical Device (optional)${NC}"
+echo -e "${BLUE}Select a physical device for deployment (or press Enter to skip)${NC}"
+echo ""
+
 # Extract physical devices
 DEVICES=$(echo "$DEVICES_OUTPUT" | awk '/== Devices ==/{flag=1; next} /== Devices Offline ==|== Simulators ==/{flag=0} flag' | grep -E '\([0-9A-F]{8}-[0-9A-F]{16}\)' || true)
 
-# Extract simulators (filter for iPhone Pro models with highest version)
-SIMULATORS=$(echo "$DEVICES_OUTPUT" | awk '/== Simulators ==/{flag=1; next} /^==/{flag=0} flag' | grep "iPhone.*Pro" | sort -t'(' -k2 -rV | head -5 || true)
+DEVICE_UDID=""
+SELECTED_DEVICE_NAME=""
 
-# Create arrays for all options
-declare -a TARGET_NAMES
-declare -a TARGET_IDS
-declare -a TARGET_TYPES
-TARGET_COUNT=0
-
-# Add physical devices
-if [ -n "$DEVICES" ]; then
-    echo -e "${CYAN}Physical Devices:${NC}"
+if [ -z "$DEVICES" ]; then
+    echo -e "${YELLOW}No physical devices connected${NC}"
+else
+    # Create arrays for devices
+    declare -a DEVICE_NAMES
+    declare -a DEVICE_UDIDS
+    DEVICE_COUNT=0
+    
     while IFS= read -r line; do
         if [ -n "$line" ]; then
             DEVICE_NAME=$(echo "$line" | sed -E 's/ \([0-9A-F]{8}-[0-9A-F]{16}\)$//')
             UDID=$(echo "$line" | grep -oE '[0-9A-F]{8}-[0-9A-F]{16}')
             
             if [ -n "$UDID" ]; then
-                TARGET_COUNT=$((TARGET_COUNT + 1))
-                TARGET_NAMES+=("$DEVICE_NAME")
-                TARGET_IDS+=("$UDID")
-                TARGET_TYPES+=("device")
-                echo -e "  ${YELLOW}$TARGET_COUNT)${NC} 📱 $DEVICE_NAME"
+                DEVICE_COUNT=$((DEVICE_COUNT + 1))
+                DEVICE_NAMES+=("$DEVICE_NAME")
+                DEVICE_UDIDS+=("$UDID")
+                echo -e "  ${YELLOW}$DEVICE_COUNT)${NC} 📱 $DEVICE_NAME"
             fi
         fi
     done <<< "$DEVICES"
+    
+    if [ $DEVICE_COUNT -gt 0 ]; then
+        echo ""
+        echo -e "${BLUE}Select device (1-$DEVICE_COUNT) or press Enter to skip:${NC} "
+        read -r DEVICE_SELECTION
+        
+        if [ -n "$DEVICE_SELECTION" ] && [[ "$DEVICE_SELECTION" =~ ^[0-9]+$ ]] && [ "$DEVICE_SELECTION" -ge 1 ] && [ "$DEVICE_SELECTION" -le "$DEVICE_COUNT" ]; then
+            SELECTED_INDEX=$((DEVICE_SELECTION - 1))
+            DEVICE_UDID="${DEVICE_UDIDS[$SELECTED_INDEX]}"
+            SELECTED_DEVICE_NAME="${DEVICE_NAMES[$SELECTED_INDEX]}"
+            echo -e "${GREEN}✓ Selected device: $SELECTED_DEVICE_NAME${NC}"
+        else
+            echo -e "${YELLOW}Skipping physical device${NC}"
+        fi
+    fi
 fi
 
-# Add simulators
-if [ -n "$SIMULATORS" ]; then
-    [ $TARGET_COUNT -gt 0 ] && echo ""
-    echo -e "${CYAN}Simulators:${NC}"
+# PHASE 2: Simulator Selection (fallback)
+echo ""
+echo -e "${CYAN}Step 2: Simulator (fallback/--simulator flag)${NC}"
+echo -e "${BLUE}Select a simulator for testing (or press Enter for default)${NC}"
+echo ""
+
+# Extract simulators (filter for iPhone Pro models with highest version)
+SIMULATORS=$(echo "$DEVICES_OUTPUT" | awk '/== Simulators ==/{flag=1; next} /^==/{flag=0} flag' | grep "iPhone.*Pro" | sort -t'(' -k2 -rV | head -5 || true)
+
+SIMULATOR_ID=""
+SELECTED_SIMULATOR_NAME=""
+
+if [ -z "$SIMULATORS" ]; then
+    echo -e "${YELLOW}No iPhone Pro simulators found. Will use default simulator.${NC}"
+    SIMULATOR_ID="booted"
+    SELECTED_SIMULATOR_NAME="Default Simulator"
+else
+    # Create arrays for simulators
+    declare -a SIM_NAMES
+    declare -a SIM_IDS
+    SIM_COUNT=0
+    
     while IFS= read -r line; do
         if [ -n "$line" ]; then
-            # Extract simulator name and ID
             SIM_NAME=$(echo "$line" | sed -E 's/ \([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\)$//')
             SIM_ID=$(echo "$line" | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}')
             
             if [ -n "$SIM_ID" ]; then
-                TARGET_COUNT=$((TARGET_COUNT + 1))
-                TARGET_NAMES+=("$SIM_NAME")
-                TARGET_IDS+=("$SIM_ID")
-                TARGET_TYPES+=("simulator")
-                echo -e "  ${YELLOW}$TARGET_COUNT)${NC} 📲 $SIM_NAME"
+                SIM_COUNT=$((SIM_COUNT + 1))
+                SIM_NAMES+=("$SIM_NAME")
+                SIM_IDS+=("$SIM_ID")
+                echo -e "  ${YELLOW}$SIM_COUNT)${NC} 📲 $SIM_NAME"
             fi
         fi
     done <<< "$SIMULATORS"
-fi
-
-if [ $TARGET_COUNT -eq 0 ]; then
-    echo -e "${YELLOW}No devices or simulators found. Using default simulator.${NC}"
-    DEVICE_UDID=""
-    DEVICE_TYPE="simulator"
-else
-    echo ""
-    echo -e "${BLUE}Select target (1-$TARGET_COUNT) or press Enter for default simulator:${NC} "
-    read -r TARGET_SELECTION
     
-    if [ -z "$TARGET_SELECTION" ]; then
-        echo -e "${YELLOW}Using default simulator${NC}"
-        DEVICE_UDID=""
-        DEVICE_TYPE="simulator"
-    elif [[ "$TARGET_SELECTION" =~ ^[0-9]+$ ]] && [ "$TARGET_SELECTION" -ge 1 ] && [ "$TARGET_SELECTION" -le "$TARGET_COUNT" ]; then
-        SELECTED_INDEX=$((TARGET_SELECTION - 1))
-        DEVICE_UDID="${TARGET_IDS[$SELECTED_INDEX]}"
-        SELECTED_DEVICE_NAME="${TARGET_NAMES[$SELECTED_INDEX]}"
-        DEVICE_TYPE="${TARGET_TYPES[$SELECTED_INDEX]}"
-        echo -e "${GREEN}Selected: $SELECTED_DEVICE_NAME ($DEVICE_TYPE)${NC}"
+    echo ""
+    echo -e "${BLUE}Select simulator (1-$SIM_COUNT) or press Enter for default:${NC} "
+    read -r SIM_SELECTION
+    
+    if [ -n "$SIM_SELECTION" ] && [[ "$SIM_SELECTION" =~ ^[0-9]+$ ]] && [ "$SIM_SELECTION" -ge 1 ] && [ "$SIM_SELECTION" -le "$SIM_COUNT" ]; then
+        SELECTED_INDEX=$((SIM_SELECTION - 1))
+        SIMULATOR_ID="${SIM_IDS[$SELECTED_INDEX]}"
+        SELECTED_SIMULATOR_NAME="${SIM_NAMES[$SELECTED_INDEX]}"
+        echo -e "${GREEN}✓ Selected simulator: $SELECTED_SIMULATOR_NAME${NC}"
     else
-        echo -e "${YELLOW}Invalid selection. Using default simulator.${NC}"
-        DEVICE_UDID=""
-        DEVICE_TYPE="simulator"
+        echo -e "${YELLOW}Using default simulator${NC}"
+        SIMULATOR_ID="booted"
+        SELECTED_SIMULATOR_NAME="Default Simulator"
     fi
 fi
 
@@ -376,15 +405,18 @@ echo -e "Marketing Version:   ${YELLOW}$MARKETING_VERSION${NC}"
 echo -e "Project Version:     ${YELLOW}$PROJECT_VERSION${NC}"
 echo -e "Swift Version:       ${YELLOW}$SWIFT_VERSION${NC}"
 if [ -n "$DEVICE_UDID" ]; then
-    echo -e "Selected Device:     ${YELLOW}$SELECTED_DEVICE_NAME${NC}"
+    echo -e "Physical Device:     ${YELLOW}$SELECTED_DEVICE_NAME${NC}"
     echo -e "Device UDID:         ${YELLOW}$DEVICE_UDID${NC}"
+fi
+if [ -n "$SELECTED_SIMULATOR_NAME" ]; then
+    echo -e "Simulator:           ${YELLOW}$SELECTED_SIMULATOR_NAME${NC}"
 fi
 echo -e "Project Directory:   ${YELLOW}$PROJECT_DIR${NC}"
 echo ""
 
 # Save values for future use
 if [ "$TEST_MODE" = false ]; then
-    save_values "$DEV_TEAM" "$DEVICE_UDID" "$SELECTED_DEVICE_NAME"
+    save_values "$DEV_TEAM" "$DEVICE_UDID" "$SELECTED_DEVICE_NAME" "$SIMULATOR_ID" "$SELECTED_SIMULATOR_NAME"
 fi
 
 # Generate the file
@@ -417,47 +449,63 @@ echo -e "${GREEN}✓ Configuration generated successfully!${NC}"
 echo ""
 echo -e "${GREEN}Generating scripts...${NC}"
 
-# Set device/simulator configuration
-if [ -z "$DEVICE_UDID" ]; then
-    SCRIPT_DEVICE_UDID="booted"
-    SCRIPT_DEVICE_TYPE="simulator"
-else
+# Set primary device configuration (physical device takes priority)
+if [ -n "$DEVICE_UDID" ]; then
     SCRIPT_DEVICE_UDID="$DEVICE_UDID"
-    SCRIPT_DEVICE_TYPE="${DEVICE_TYPE:-device}"
+    SCRIPT_DEVICE_NAME="$SELECTED_DEVICE_NAME"
+else
+    # No device, use simulator as primary
+    SCRIPT_DEVICE_UDID="${SIMULATOR_ID:-booted}"
+    SCRIPT_DEVICE_NAME="${SELECTED_SIMULATOR_NAME:-Default Simulator}"
 fi
+
+# Set simulator configuration (for --simulator flag)
+SCRIPT_SIMULATOR_ID="${SIMULATOR_ID:-booted}"
+SCRIPT_SIMULATOR_NAME="${SELECTED_SIMULATOR_NAME:-iPhone 15 Pro}"
+
+# Generate supervibes.local.json configuration file
+LOCAL_CONFIG="$PROJECT_DIR/supervibes.local.json"
+cat > "$LOCAL_CONFIG" <<EOF
+{
+  "projectName": "$PROJECT_NAME",
+  "displayName": "$DISPLAY_NAME",
+  "bundleIdentifier": "$BUNDLE_ID",
+  "deviceUDID": "$SCRIPT_DEVICE_UDID",
+  "deviceName": "$SCRIPT_DEVICE_NAME",
+  "simulatorId": "$SCRIPT_SIMULATOR_ID",
+  "simulatorName": "$SCRIPT_SIMULATOR_NAME"
+}
+EOF
+
+echo -e "${GREEN}✓ Configuration saved to supervibes.local.json${NC}"
     
 # Check if scripts-template folder exists
 if [ -d "scripts-template" ]; then
     # Create scripts directory in project
     mkdir -p "$PROJECT_DIR/scripts"
     
-    # Copy and process all template scripts
+    # Copy all template scripts without modification
     for template in scripts-template/*-template.sh; do
         if [ -f "$template" ]; then
             # Get the base name without -template suffix
             script_name=$(basename "$template" | sed 's/-template//')
             target="$PROJECT_DIR/scripts/$script_name"
             
-            # Copy template
+            # Simply copy the template as-is
             cp "$template" "$target"
-            
-            # Replace placeholders
-            sed -i '' "s/\$projectName/$PROJECT_NAME/g" "$target"
-            sed -i '' "s/\$displayName/$DISPLAY_NAME/g" "$target"
-            sed -i '' "s/\$bundleIdentifier/$BUNDLE_ID/g" "$target"
-            sed -i '' "s/\$deviceUDID/$SCRIPT_DEVICE_UDID/g" "$target"
-            sed -i '' "s/\$deviceType/$SCRIPT_DEVICE_TYPE/g" "$target"
             
             # Make executable
             chmod +x "$target"
         fi
     done
     
-    echo -e "${GREEN}✓ Scripts generated in scripts/ folder!${NC}"
-    if [ "$SCRIPT_DEVICE_TYPE" = "simulator" ]; then
-        echo -e "${CYAN}Note: Scripts configured for simulator${NC}"
+    echo -e "${GREEN}✓ Scripts copied to scripts/ folder!${NC}"
+    if [ -n "$DEVICE_UDID" ]; then
+        echo -e "${CYAN}Default target: Physical device ($SELECTED_DEVICE_NAME)${NC}"
+        echo -e "${CYAN}Use --simulator flag to target: $SELECTED_SIMULATOR_NAME${NC}"
     else
-        echo -e "${CYAN}Note: Scripts configured for physical device${NC}"
+        echo -e "${CYAN}Default target: Simulator ($SELECTED_SIMULATOR_NAME)${NC}"
+        echo -e "${CYAN}No physical device configured${NC}"
     fi
 else
     echo -e "${YELLOW}Warning: scripts-template folder not found${NC}"

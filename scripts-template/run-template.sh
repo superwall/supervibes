@@ -1,12 +1,26 @@
 #!/bin/bash
 
-# Build and Run script for $displayName app
-DEFAULT_UDID="$deviceUDID"
-DEFAULT_TYPE="$deviceType"
-BUNDLE_ID=$bundleIdentifier
+# Build and Run script for app
+# Load configuration from supervibes.local.json
+CONFIG_FILE="supervibes.local.json"
+
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "❌ Configuration file $CONFIG_FILE not found!"
+    echo "Please ensure the project was generated properly."
+    exit 1
+fi
+
+# Parse JSON configuration
+PROJECT_NAME=$(grep '"projectName"' "$CONFIG_FILE" | cut -d'"' -f4)
+DISPLAY_NAME=$(grep '"displayName"' "$CONFIG_FILE" | cut -d'"' -f4)
+BUNDLE_ID=$(grep '"bundleIdentifier"' "$CONFIG_FILE" | cut -d'"' -f4)
+DEVICE_UDID=$(grep '"deviceUDID"' "$CONFIG_FILE" | cut -d'"' -f4)
+DEVICE_NAME=$(grep '"deviceName"' "$CONFIG_FILE" | cut -d'"' -f4)
+SIMULATOR_ID=$(grep '"simulatorId"' "$CONFIG_FILE" | cut -d'"' -f4)
+SIMULATOR_NAME=$(grep '"simulatorName"' "$CONFIG_FILE" | cut -d'"' -f4)
 
 # Parse command line arguments
-SCHEME="$projectName"
+SCHEME="$PROJECT_NAME"
 CONFIG="Release"
 USE_SIMULATOR=false
 USE_DEBUG=false
@@ -15,7 +29,7 @@ for arg in "$@"; do
     case $arg in
         --debug)
             USE_DEBUG=true
-            SCHEME="$projectName-debug"
+            SCHEME="$PROJECT_NAME-debug"
             CONFIG="Debug"
             ;;
         --simulator)
@@ -31,25 +45,42 @@ else
     echo "🚀 Using release scheme: $SCHEME"
 fi
 
-# Set destination based on flags
+# Determine target based on configuration and flags
 if [ "$USE_SIMULATOR" = true ]; then
-    echo "📲 Building for simulator"
+    # User explicitly wants simulator
+    echo "📲 Building for simulator: $SIMULATOR_NAME"
     SDK="iphonesimulator"
-    DESTINATION="platform=iOS Simulator,name=iPhone 15 Pro"
-    PRODUCTS_DIR="build/Build/Products/${CONFIG}-iphonesimulator"
-else
-    echo "📱 Building for device"
-    SDK="iphoneos"
-    if [ "$DEFAULT_TYPE" = "simulator" ] && [ "$DEFAULT_UDID" = "booted" ]; then
-        # Default was simulator but user didn't specify --simulator
-        echo "⚠️  Default target is simulator. Use --simulator flag or select a device in generate.sh"
-        SDK="iphonesimulator"
+    if [ "$SIMULATOR_ID" = "booted" ]; then
         DESTINATION="platform=iOS Simulator,name=iPhone 15 Pro"
-        PRODUCTS_DIR="build/Build/Products/${CONFIG}-iphonesimulator"
     else
-        DESTINATION="platform=iOS,id=$DEFAULT_UDID"
-        PRODUCTS_DIR="build/Build/Products/${CONFIG}-iphoneos"
+        DESTINATION="platform=iOS Simulator,id=$SIMULATOR_ID"
     fi
+    PRODUCTS_DIR="build/Build/Products/${CONFIG}-iphonesimulator"
+    TARGET_ID="$SIMULATOR_ID"
+    TARGET_NAME="$SIMULATOR_NAME"
+    IS_SIMULATOR=true
+elif [ "$DEVICE_UDID" = "$SIMULATOR_ID" ] || [ "$DEVICE_UDID" = "booted" ] || [ -z "$DEVICE_UDID" ]; then
+    # No physical device configured, use simulator
+    echo "📲 Building for simulator: $SIMULATOR_NAME (no device configured)"
+    SDK="iphonesimulator"
+    if [ "$SIMULATOR_ID" = "booted" ]; then
+        DESTINATION="platform=iOS Simulator,name=iPhone 15 Pro"
+    else
+        DESTINATION="platform=iOS Simulator,id=$SIMULATOR_ID"
+    fi
+    PRODUCTS_DIR="build/Build/Products/${CONFIG}-iphonesimulator"
+    TARGET_ID="$SIMULATOR_ID"
+    TARGET_NAME="$SIMULATOR_NAME"
+    IS_SIMULATOR=true
+else
+    # Physical device is primary target
+    echo "📱 Building for device: $DEVICE_NAME"
+    SDK="iphoneos"
+    DESTINATION="platform=iOS,id=$DEVICE_UDID"
+    PRODUCTS_DIR="build/Build/Products/${CONFIG}-iphoneos"
+    TARGET_ID="$DEVICE_UDID"
+    TARGET_NAME="$DEVICE_NAME"
+    IS_SIMULATOR=false
 fi
 
 echo "🧞‍♂️ Generating xcode project..."
@@ -72,20 +103,30 @@ echo "✅ Build succeeded!"
 echo ""
 
 # Install and launch based on target
-if [ "$SDK" = "iphonesimulator" ]; then
+if [ "$IS_SIMULATOR" = true ]; then
     echo "🚀 Launching in simulator..."
     # Boot simulator if needed
-    xcrun simctl boot "iPhone 15 Pro" 2>/dev/null || true
+    if [ "$SIMULATOR_ID" != "booted" ]; then
+        xcrun simctl boot "$SIMULATOR_ID" 2>/dev/null || true
+    else
+        xcrun simctl boot "iPhone 15 Pro" 2>/dev/null || true
+    fi
+    
     # Install app
-    xcrun simctl install "iPhone 15 Pro" "$PRODUCTS_DIR/$displayName.app"
-    # Launch app
-    xcrun simctl launch "iPhone 15 Pro" "$BUNDLE_ID"
+    if [ "$SIMULATOR_ID" != "booted" ]; then
+        xcrun simctl install "$SIMULATOR_ID" "$PRODUCTS_DIR/$DISPLAY_NAME.app"
+        xcrun simctl launch "$SIMULATOR_ID" "$BUNDLE_ID"
+    else
+        xcrun simctl install "iPhone 15 Pro" "$PRODUCTS_DIR/$DISPLAY_NAME.app"
+        xcrun simctl launch "iPhone 15 Pro" "$BUNDLE_ID"
+    fi
+    
     echo "✅ App launched in simulator!"
 else
     echo "📱 Installing app on device..."
     xcrun devicectl device install app \
-      --device "$DEFAULT_UDID" \
-      "$PRODUCTS_DIR/$displayName.app"
+      --device "$DEVICE_UDID" \
+      "$PRODUCTS_DIR/$DISPLAY_NAME.app"
     
     if [ $? -ne 0 ]; then
         echo "❌ Installation failed!"
@@ -99,7 +140,7 @@ else
     sleep 1
     
     xcrun devicectl device process launch \
-      --device "$DEFAULT_UDID" \
+      --device "$DEVICE_UDID" \
       "$BUNDLE_ID"
     
     if [ $? -ne 0 ]; then
