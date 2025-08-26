@@ -1,4 +1,4 @@
-# Supervibes 🎵
+# Supervibes ⚡️
 
 An opinionated workflow for using Claude Code to build native iOS apps alongside Xcode. Built by [Superwall](https://superwall.com).
 
