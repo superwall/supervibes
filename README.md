@@ -3,25 +3,25 @@
 An opinionated workflow for using Claude Code to build native iOS apps alongside Xcode. Built by [Superwall](https://superwall.com).
 
 ```
-    /$$$$$$$                                          
-   /$$__  $$                                          
-  | $$  \__/ /$$   /$$ /$$$$$$$   /$$$$$$  /$$$$$$    
-  |  $$$$$$ | $$  | $$| $$__  $$ /$$__  $$| $$__  $$  
-   \____  $$| $$  | $$| $$  \ $$| $$$$$$$$| $$  \__/  
-   /$$  \ $$| $$  | $$| $$  | $$| $$_____/| $$        
-  |  $$$$$$/|  $$$$$$/| $$$$$$$/|  $$$$$$$| $$        
-   \______/  \______/ | $$____/  \_______/|__/        
-                      | $$                            
-                      | $$                            
-                      |__/                            
-              /$$ /$$|                                
-             |__/| $$|                                
-   /$$    /$$ /$$| $$$$$$$ | $$$$$$   /$$$$$$$        
-  |  $$  /$$/| $$| $$__  $$| $$__  $$ /$$_____/       
-   \  $$/$$/ | $$| $$  \ $$| $$$$$$$$|  $$$$$$        
-    \  $$$/  | $$| $$  | $$| $$_____/ \____  $$       
-     \  $/   | $$| $$$$$$$/|  $$$$$$$ /$$$$$$$/       
-      \_/    |__/|_______/  \_______/|_______/        
+    /$$$$$$$
+   /$$__  $$
+  | $$  \__/ /$$   /$$ /$$$$$$$   /$$$$$$  /$$$$$$
+  |  $$$$$$ | $$  | $$| $$__  $$ /$$__  $$| $$__  $$
+   \____  $$| $$  | $$| $$  \ $$| $$$$$$$$| $$  \__/
+   /$$  \ $$| $$  | $$| $$  | $$| $$_____/| $$
+  |  $$$$$$/|  $$$$$$/| $$$$$$$/|  $$$$$$$| $$
+   \______/  \______/ | $$____/  \_______/|__/
+                      | $$
+                      | $$
+                      |__/
+              /$$ /$$|
+             |__/| $$|
+   /$$    /$$ /$$| $$$$$$$ | $$$$$$   /$$$$$$$
+  |  $$  /$$/| $$| $$__  $$| $$__  $$ /$$_____/
+   \  $$/$$/ | $$| $$  \ $$| $$$$$$$$|  $$$$$$
+    \  $$$/  | $$| $$  | $$| $$_____/ \____  $$
+     \  $/   | $$| $$$$$$$/|  $$$$$$$ /$$$$$$$/
+      \_/    |__/|_______/  \_______/|_______/
 ```
 
 ## Features
@@ -35,7 +35,7 @@ An opinionated workflow for using Claude Code to build native iOS apps alongside
 - 🎯 **XcodeGen Integration** - Clean project configuration with `project.yml`
 - 🤖 **Claude AI Ready** - Includes CLAUDE.md for AI-assisted development
 
-## What Gets Generated
+## Generated Project Structure
 
 ```
 projects/YourProject/
@@ -44,7 +44,7 @@ projects/YourProject/
 │   ├── YourProjectApp.swift   # App entry point
 │   └── ContentView.swift      # Main view
 ├── YourProjectTests/           # Unit tests
-├── YourProjectUITests/         # UI tests  
+├── YourProjectUITests/         # UI tests
 ├── scripts/                    # Automation scripts
 │   ├── build.sh               # Build only
 │   ├── run.sh                 # Build and run on device
@@ -60,19 +60,18 @@ projects/YourProject/
 
 All scripts are generated in the `scripts/` directory of your project:
 
-- **`build.sh`** - Builds the project in release mode
-- **`build.sh --debug`** - Builds the project in debug mode
-- **`build.sh --simulator`** - Builds for simulator instead of device
-- **`run.sh`** - Builds and runs the app
-- **`run.sh --debug`** - Builds and runs with debug configuration
-- **`run.sh --simulator`** - Builds and runs on simulator
-- **`install.sh`** - Installs and launches the latest build
-- **`install.sh --debug`** - Installs and launches the latest debug build
-- **`install.sh --simulator`** - Installs to simulator
-- **`unit-test.sh`** - Runs unit tests (uses debug scheme)
-- **`ui-test.sh`** - Runs UI tests (uses debug scheme)
+| Script | Description | Flags |
+|--------|-------------|-------|
+| `build.sh` | Builds the project | `--debug`, `--simulator` |
+| `run.sh` | Builds and runs the app | `--debug`, `--simulator` |
+| `install.sh` | Installs and launches latest build | `--debug`, `--simulator` |
+| `unit-test.sh` | Runs unit tests (debug scheme) | - |
+| `ui-test.sh` | Runs UI tests (debug scheme) | - |
 
-Scripts support combining flags: `./run.sh --debug --simulator`
+**Flag descriptions:**
+- `--debug` - Uses debug configuration with test support
+- `--simulator` - Targets iOS simulator instead of physical device
+- Flags can be combined: `./run.sh --debug --simulator`
 
 ## Installation
 
@@ -81,6 +80,7 @@ Scripts support combining flags: `./run.sh --debug --simulator`
 Before using Supervibes, ensure you have all the required tools installed.
 
 **Quick check:** Run our setup checker to see what's missing:
+
 ```bash
 ./check-setup.sh
 ```
@@ -88,51 +88,65 @@ Before using Supervibes, ensure you have all the required tools installed.
 #### Manual Installation
 
 #### 1. **Xcode & Command Line Tools**
+
 Make sure Xcode is installed from the App Store and command line tools are set up:
+
 ```bash
 xcode-select --install
 ```
 
 #### 2. **Homebrew**
+
 The package manager for macOS. If not installed:
+
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
 #### 3. **XcodeGen**
+
 For generating Xcode projects from YAML specifications:
+
 ```bash
 brew install xcodegen
 xcodegen --version  # Verify installation
 ```
 
 #### 4. **SwiftFormat**
+
 For consistent code formatting across generated projects:
+
 ```bash
 brew install swiftformat
 swiftformat --version  # Verify installation
 ```
 
 #### 5. **GitHub CLI**
+
 For repository operations and pull request management:
+
 ```bash
 brew install gh
 gh auth login  # Follow the prompts to authenticate
 ```
 
 #### 6. **Claude Code** (Optional but Recommended)
+
 For AI-powered development assistance:
+
 ```bash
 npm install -g @anthropic-ai/claude-code
 claude -v  # Verify installation
 ```
 
 If you don't have npm, install Node.js first:
+
 ```bash
 brew install node
 ```
 
 #### 7. **Apple Developer Setup**
+
 You'll need your Apple Developer Team ID. To find it:
 
 1. Visit https://developer.apple.com/account
@@ -169,6 +183,7 @@ Run the generator and follow the prompts:
 ```
 
 You'll be asked for:
+
 - Project name (lowercase, alphanumeric)
 - Display name
 - Bundle identifier
@@ -196,7 +211,6 @@ Two schemes are generated:
    - No test targets
    - Release configuration
    - Used by default in scripts
-   
 2. **Debug** (`YourProject-debug`) - For development and testing
    - Includes unit and UI test targets
    - Debug configuration with symbols
@@ -225,6 +239,7 @@ Scroll down and copy your Team ID:
 ## Claude AI Integration
 
 Each project includes:
+
 - **CLAUDE.md** - Project-specific documentation with your project overview
 - **.claude/** - Configuration directory with specialized AI agents
 - Modern Swift development guidelines
@@ -240,7 +255,7 @@ Supervibes stands on the shoulders of giants. Special thanks to:
 
 ## Contributing
 
-This is an internal Superwall tool. For issues or suggestions, please contact the iOS team.
+This is an internal Superwall tool (for now)! Please implement the features you think are necessary for launch.
 
 ## License
 
