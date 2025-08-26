@@ -163,8 +163,8 @@ else
 fi
 
 # Check prerequisites
-if [ -f "./check-prerequisites-brief.sh" ]; then
-    if ! ./check-prerequisites-brief.sh; then
+if [ -f "./check-setup.sh" ]; then
+    if ! ./check-setup.sh --brief; then
         exit 1
     fi
 fi
@@ -386,56 +386,55 @@ sed -i '' "s/\$projectNameUITests/${PROJECT_NAME}UITests/g" "$OUTPUT_FILE"
 
 echo -e "${GREEN}✓ Configuration generated successfully!${NC}"
 
-# Generate build and run scripts if device UDID was provided
-if [ -n "$DEVICE_UDID" ]; then
-    echo ""
-    echo -e "${GREEN}Generating scripts...${NC}"
+# Generate build and run scripts (always generate, use simulator if no device)
+echo ""
+echo -e "${GREEN}Generating scripts...${NC}"
+
+# Default to simulator if no device selected
+SCRIPT_DEVICE_UDID="${DEVICE_UDID:-booted}"
     
-    # Check if scripts-template folder exists
-    if [ -d "scripts-template" ]; then
-        # Create scripts directory in project
-        mkdir -p "$PROJECT_DIR/scripts"
-        
-        # Copy and process all template scripts
-        for template in scripts-template/*-template.sh; do
-            if [ -f "$template" ]; then
-                # Get the base name without -template suffix
-                script_name=$(basename "$template" | sed 's/-template//')
-                target="$PROJECT_DIR/scripts/$script_name"
-                
-                # Copy template
-                cp "$template" "$target"
-                
-                # Replace placeholders
-                sed -i '' "s/\$projectName/$PROJECT_NAME/g" "$target"
-                sed -i '' "s/\$displayName/$DISPLAY_NAME/g" "$target"
-                sed -i '' "s/\$bundleIdentifier/$BUNDLE_ID/g" "$target"
-                sed -i '' "s/\$deviceUDID/$DEVICE_UDID/g" "$target"
-                
-                # Make executable
-                chmod +x "$target"
-            fi
-        done
-        
-        echo -e "${GREEN}✓ Scripts generated in scripts/ folder!${NC}"
-    else
-        echo -e "${YELLOW}Warning: scripts-template folder not found${NC}"
+# Check if scripts-template folder exists
+if [ -d "scripts-template" ]; then
+    # Create scripts directory in project
+    mkdir -p "$PROJECT_DIR/scripts"
+    
+    # Copy and process all template scripts
+    for template in scripts-template/*-template.sh; do
+        if [ -f "$template" ]; then
+            # Get the base name without -template suffix
+            script_name=$(basename "$template" | sed 's/-template//')
+            target="$PROJECT_DIR/scripts/$script_name"
+            
+            # Copy template
+            cp "$template" "$target"
+            
+            # Replace placeholders
+            sed -i '' "s/\$projectName/$PROJECT_NAME/g" "$target"
+            sed -i '' "s/\$displayName/$DISPLAY_NAME/g" "$target"
+            sed -i '' "s/\$bundleIdentifier/$BUNDLE_ID/g" "$target"
+            sed -i '' "s/\$deviceUDID/$SCRIPT_DEVICE_UDID/g" "$target"
+            
+            # Make executable
+            chmod +x "$target"
+        fi
+    done
+    
+    echo -e "${GREEN}✓ Scripts generated in scripts/ folder!${NC}"
+    if [ -z "$DEVICE_UDID" ]; then
+        echo -e "${YELLOW}Note: Scripts will use simulator (no device was selected)${NC}"
     fi
+else
+    echo -e "${YELLOW}Warning: scripts-template folder not found${NC}"
 fi
 
 echo ""
 echo -e "Next steps:"
 echo -e "1. Review the generated ${YELLOW}$OUTPUT_FILE${NC}"
-if [ -n "$DEVICE_UDID" ]; then
-    echo -e "2. Run: ${YELLOW}cd $PROJECT_DIR && scripts/build.sh${NC} to build only"
-    echo -e "3. Run: ${YELLOW}cd $PROJECT_DIR && scripts/buildRun.sh${NC} to build and run on device"
-    echo -e "4. Run: ${YELLOW}cd $PROJECT_DIR && scripts/run.sh${NC} to install and launch the last build"
-    echo -e "5. Run: ${YELLOW}cd $PROJECT_DIR && scripts/unit-test.sh${NC} to run unit tests"
-    echo -e "6. Run: ${YELLOW}cd $PROJECT_DIR && scripts/ui-test.sh${NC} to run UI tests"
-else
-    echo -e "2. Run: ${YELLOW}xcodegen generate${NC}"
-    echo -e "3. Open the generated Xcode project"
-fi
+echo -e "2. Run: ${YELLOW}cd $PROJECT_DIR && scripts/build.sh${NC} to build only"
+echo -e "3. Run: ${YELLOW}cd $PROJECT_DIR && scripts/buildRun.sh${NC} to build and run"
+echo -e "4. Run: ${YELLOW}cd $PROJECT_DIR && scripts/run.sh${NC} to install and launch the last build"
+echo -e "5. Run: ${YELLOW}cd $PROJECT_DIR && scripts/unit-test.sh${NC} to run unit tests"
+echo -e "6. Run: ${YELLOW}cd $PROJECT_DIR && scripts/ui-test.sh${NC} to run UI tests"
 echo ""
 
 # Create initial Swift files and directories
@@ -459,8 +458,62 @@ struct ${DISPLAY_NAME}App: App {
 }
 EOF
 
-    # Create Assets.xcassets directory (XcodeGen will populate it)
+    # Create Assets.xcassets directory structure
     mkdir -p "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets"
+    mkdir -p "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/AccentColor.colorset"
+    mkdir -p "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/AppIcon.appiconset"
+    
+    # Create Contents.json for Assets.xcassets
+    cat > "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/Contents.json" << 'EOF'
+{
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}
+EOF
+    
+    # Create AccentColor.colorset Contents.json with cyan color (#75FFF1)
+    cat > "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/AccentColor.colorset/Contents.json" << 'EOF'
+{
+  "colors": [
+    {
+      "color": {
+        "color-space": "srgb",
+        "components": {
+          "red": "0.459",
+          "green": "1.000",
+          "blue": "0.945",
+          "alpha": "1.000"
+        }
+      },
+      "idiom": "universal"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}
+EOF
+    
+    # Create AppIcon.appiconset Contents.json
+    cat > "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/AppIcon.appiconset/Contents.json" << 'EOF'
+{
+  "images": [
+    {
+      "filename": "icon.png",
+      "idiom": "universal",
+      "platform": "ios",
+      "size": "1024x1024"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}
+EOF
     
     # Create ContentView
     cat > "$PROJECT_DIR/$PROJECT_NAME/ContentView.swift" << EOF

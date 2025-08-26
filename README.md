@@ -41,9 +41,9 @@ A streamlined iOS project generator with XcodeGen integration, built by [Superwa
 
 Before using Supervibes, ensure you have all the required tools installed.
 
-**Quick check:** Run our prerequisites checker to see what's missing:
+**Quick check:** Run our setup checker to see what's missing:
 ```bash
-./check-prerequisites.sh
+./check-setup.sh
 ```
 
 #### Manual Installation

@@ -7,13 +7,14 @@ YELLOW='\033[0;33m'
 CYAN='\033[0;96m'
 NC='\033[0m'
 
-echo -e "${CYAN}"
-echo "═══════════════════════════════════════════════════"
-echo "     Supervibes Prerequisites Check"
-echo "═══════════════════════════════════════════════════"
-echo -e "${NC}"
+# Check for --brief flag
+BRIEF_MODE=false
+if [[ "$1" == "--brief" ]]; then
+    BRIEF_MODE=true
+fi
 
 MISSING_DEPS=0
+MISSING_LIST=""
 
 # Function to check if a command exists
 check_command() {
@@ -22,21 +23,62 @@ check_command() {
     local install_cmd=$3
     
     if command -v $cmd &> /dev/null; then
-        echo -e "${GREEN}✓${NC} $name is installed"
-        if [ "$cmd" != "xcode-select" ]; then
-            $cmd --version 2>/dev/null || $cmd -v 2>/dev/null || echo "   Version: $(which $cmd)"
+        if [ "$BRIEF_MODE" = false ]; then
+            echo -e "${GREEN}✓${NC} $name is installed"
+            if [ "$cmd" != "xcode-select" ]; then
+                $cmd --version 2>/dev/null || $cmd -v 2>/dev/null || echo "   Version: $(which $cmd)"
+            fi
         fi
     else
-        echo -e "${RED}✗${NC} $name is not installed"
-        echo -e "  ${YELLOW}Install with: ${install_cmd}${NC}"
+        if [ "$BRIEF_MODE" = true ]; then
+            MISSING_LIST="${MISSING_LIST}  ${RED}✗${NC} $name\n"
+        else
+            echo -e "${RED}✗${NC} $name is not installed"
+            echo -e "  ${YELLOW}Install with: ${install_cmd}${NC}"
+        fi
         MISSING_DEPS=$((MISSING_DEPS + 1))
     fi
 }
 
-# Check Xcode
+# Brief mode - just check and report
+if [ "$BRIEF_MODE" = true ]; then
+    # Check all requirements silently
+    xcode-select -p &> /dev/null || { MISSING_DEPS=$((MISSING_DEPS + 1)); MISSING_LIST="${MISSING_LIST}  ${RED}✗${NC} Xcode Command Line Tools\n"; }
+    check_command "brew" "Homebrew" ""
+    check_command "xcodegen" "XcodeGen" ""
+    
+    # Check for either swift-format or swiftformat
+    if ! command -v swift-format &> /dev/null && ! command -v swiftformat &> /dev/null; then
+        MISSING_DEPS=$((MISSING_DEPS + 1))
+        MISSING_LIST="${MISSING_LIST}  ${RED}✗${NC} Swift Format (swiftformat or swift-format)\n"
+    fi
+    
+    check_command "gh" "GitHub CLI" ""
+    
+    # Return status and show missing dependencies
+    if [ $MISSING_DEPS -gt 0 ]; then
+        echo -e "${YELLOW}⚠ Missing $MISSING_DEPS required dependencies:${NC}"
+        echo -e "$MISSING_LIST"
+        echo -e "${YELLOW}Run ${NC}./check-setup.sh${YELLOW} for installation instructions${NC}"
+        echo ""
+        exit 1
+    fi
+    
+    # All good - exit silently
+    exit 0
+fi
+
+# Full mode - detailed check with instructions
+echo -e "${CYAN}"
+echo "═══════════════════════════════════════════════════"
+echo "     Supervibes Prerequisites Check"
+echo "═══════════════════════════════════════════════════"
+echo -e "${NC}"
+
 echo -e "${CYAN}Checking development tools...${NC}"
 echo ""
 
+# Check Xcode
 if xcode-select -p &> /dev/null; then
     echo -e "${GREEN}✓${NC} Xcode Command Line Tools installed"
     echo "   Path: $(xcode-select -p)"
