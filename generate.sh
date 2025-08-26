@@ -162,6 +162,13 @@ else
     echo ""
 fi
 
+# Check prerequisites
+if [ -f "./check-prerequisites-brief.sh" ]; then
+    if ! ./check-prerequisites-brief.sh; then
+        exit 1
+    fi
+fi
+
 # Check if template exists
 TEMPLATE_FILE="project-template.yml"
 if [ ! -f "$TEMPLATE_FILE" ]; then

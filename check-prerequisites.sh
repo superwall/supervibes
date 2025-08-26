@@ -52,8 +52,18 @@ check_command "brew" "Homebrew" '/bin/bash -c "$(curl -fsSL https://raw.githubus
 # Check XcodeGen
 check_command "xcodegen" "XcodeGen" "brew install xcodegen"
 
-# Check Swift Format
-check_command "swift-format" "Swift Format" "brew install swift-format"
+# Check Swift Format (either swift-format or swiftformat)
+if command -v swift-format &> /dev/null; then
+    echo -e "${GREEN}✓${NC} Swift Format is installed (swift-format)"
+    swift-format --version 2>/dev/null || echo "   Version: swift-format"
+elif command -v swiftformat &> /dev/null; then
+    echo -e "${GREEN}✓${NC} Swift Format is installed (swiftformat)"
+    swiftformat --version 2>/dev/null || echo "   Version: swiftformat"
+else
+    echo -e "${RED}✗${NC} Swift Format is not installed"
+    echo -e "  ${YELLOW}Install with: brew install swiftformat (or swift-format)${NC}"
+    MISSING_DEPS=$((MISSING_DEPS + 1))
+fi
 
 # Check GitHub CLI
 if command -v gh &> /dev/null; then

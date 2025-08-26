@@ -68,10 +68,11 @@ xcodegen --version  # Verify installation
 ```
 
 #### 4. **Swift Format**
-For consistent code formatting across generated projects:
+For consistent code formatting across generated projects (either one):
 ```bash
-brew install swift-format
-swift-format --version  # Verify installation
+brew install swiftformat     # Recommended (Nick Lockwood's SwiftFormat)
+# OR
+brew install swift-format    # Apple's swift-format
 ```
 
 #### 5. **GitHub CLI**
