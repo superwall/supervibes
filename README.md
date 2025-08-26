@@ -234,8 +234,6 @@ Supervibes stands on the shoulders of giants. Special thanks to:
 
 - **[XcodeGen](https://github.com/yonaskolb/XcodeGen)** by Yonas Kolb - The foundation of our project generation
 - **[SwiftFormat](https://github.com/nicklockwood/SwiftFormat)** by Nick Lockwood - Keeping our code beautifully formatted
-- **[SwiftLint](https://github.com/realm/SwiftLint)** by Realm - Enforcing Swift style and conventions
-- **[xcbeautify](https://github.com/tuist/xcbeautify)** by Tuist - Making Xcode output readable
 - **[Claude Code](https://claude.ai/code)** by Anthropic - AI-powered development assistance
 
 ## Contributing
