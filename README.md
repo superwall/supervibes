@@ -94,18 +94,20 @@ brew install node
 ```
 
 #### 7. **Apple Developer Setup**
-- Ensure you have an active Apple Developer account
-- Your development certificates should be properly configured
+You'll need your Apple Developer Team ID. To find it:
 
-To view available code signing identities:
-```bash
-security find-identity -v -p codesigning
-```
+1. Visit https://developer.apple.com/account
+2. Sign in with your Apple ID
+3. Scroll down to "Membership details" and copy your Team ID:
 
-You should see output like:
 ```
-1) XXXXXXXXXX "Apple Development: Your Name (TEAMID)"
-2) XXXXXXXXXX "Apple Distribution: Your Name (TEAMID)"
+┌────────────────────────────────┐
+│       Membership details       │
+├────────────────────────────────┤
+│ Entity name:  Your Company     │
+│ Team ID:      XXXXXXXXXX       │ <- copy this
+│ Entity type:  Organization     │
+└────────────────────────────────┘
 ```
 
 ### Clone the Repository
