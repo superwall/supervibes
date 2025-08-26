@@ -35,6 +35,45 @@ An opinionated workflow for using Claude Code to build native iOS apps alongside
 - 🎯 **XcodeGen Integration** - Clean project configuration with `project.yml`
 - 🤖 **Claude AI Ready** - Includes CLAUDE.md for AI-assisted development
 
+## What Gets Generated
+
+```
+projects/YourProject/
+├── project.yml                 # XcodeGen configuration
+├── YourProject/                # Source code
+│   ├── YourProjectApp.swift   # App entry point
+│   └── ContentView.swift      # Main view
+├── YourProjectTests/           # Unit tests
+├── YourProjectUITests/         # UI tests  
+├── scripts/                    # Automation scripts
+│   ├── build.sh               # Build only
+│   ├── run.sh                 # Build and run on device
+│   ├── install.sh             # Install and run latest build
+│   ├── unit-test.sh           # Run unit tests
+│   └── ui-test.sh             # Run UI tests
+├── CLAUDE.md                   # Project documentation for Claude AI
+└── .claude/                    # Claude AI configuration
+    └── agents/                 # Specialized AI agents
+```
+
+## Build Scripts
+
+All scripts are generated in the `scripts/` directory of your project:
+
+- **`build.sh`** - Builds the project in release mode
+- **`build.sh --debug`** - Builds the project in debug mode
+- **`build.sh --simulator`** - Builds for simulator instead of device
+- **`run.sh`** - Builds and runs the app
+- **`run.sh --debug`** - Builds and runs with debug configuration
+- **`run.sh --simulator`** - Builds and runs on simulator
+- **`install.sh`** - Installs and launches the latest build
+- **`install.sh --debug`** - Installs and launches the latest debug build
+- **`install.sh --simulator`** - Installs to simulator
+- **`unit-test.sh`** - Runs unit tests (uses debug scheme)
+- **`ui-test.sh`** - Runs UI tests (uses debug scheme)
+
+Scripts support combining flags: `./run.sh --debug --simulator`
+
 ## Installation
 
 ### Prerequisites
@@ -146,45 +185,6 @@ Generate a test project with a random name using saved settings:
 ```
 
 This requires running the interactive mode at least once to save your Team ID and device.
-
-## What Gets Generated
-
-```
-projects/YourProject/
-├── project.yml                 # XcodeGen configuration
-├── YourProject/                # Source code
-│   ├── YourProjectApp.swift   # App entry point
-│   └── ContentView.swift      # Main view
-├── YourProjectTests/           # Unit tests
-├── YourProjectUITests/         # UI tests  
-├── scripts/                    # Automation scripts
-│   ├── build.sh               # Build only
-│   ├── run.sh                 # Build and run on device
-│   ├── install.sh             # Install and run latest build
-│   ├── unit-test.sh           # Run unit tests
-│   └── ui-test.sh             # Run UI tests
-├── CLAUDE.md                   # Project documentation for Claude AI
-└── .claude/                    # Claude AI configuration
-    └── agents/                 # Specialized AI agents
-```
-
-## Build Scripts
-
-All scripts are generated in the `scripts/` directory of your project:
-
-- **`build.sh`** - Builds the project in release mode
-- **`build.sh --debug`** - Builds the project in debug mode
-- **`build.sh --simulator`** - Builds for simulator instead of device
-- **`run.sh`** - Builds and runs the app
-- **`run.sh --debug`** - Builds and runs with debug configuration
-- **`run.sh --simulator`** - Builds and runs on simulator
-- **`install.sh`** - Installs and launches the latest build
-- **`install.sh --debug`** - Installs and launches the latest debug build
-- **`install.sh --simulator`** - Installs to simulator
-- **`unit-test.sh`** - Runs unit tests (uses debug scheme)
-- **`ui-test.sh`** - Runs UI tests (uses debug scheme)
-
-Scripts support combining flags: `./run.sh --debug --simulator`
 
 ## Configuration
 
