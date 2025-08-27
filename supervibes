@@ -33,6 +33,7 @@ fi
 # Parse command line arguments
 PROJECTS_DIR="$DEFAULT_PROJECTS_DIR"
 TEST_MODE=false
+INIT_MODE=false
 
 # Process all arguments
 while [[ $# -gt 0 ]]; do
@@ -90,6 +91,49 @@ while [[ $# -gt 0 ]]; do
             fi
             exit 0
             ;;
+        --init)
+            # Check if supervibes.local.json exists
+            if [ ! -f "supervibes.local.json" ]; then
+                echo -e "${RED}Error: supervibes.local.json not found in current directory${NC}"
+                echo "Run this command from a project directory created with supervibes"
+                exit 1
+            fi
+            
+            # Set init mode
+            INIT_MODE=true
+            
+            # Read values from supervibes.local.json
+            if command -v jq &> /dev/null; then
+                PROJECT_NAME=$(jq -r '.projectName' supervibes.local.json)
+                DISPLAY_NAME=$(jq -r '.displayName' supervibes.local.json)
+                BUNDLE_ID=$(jq -r '.bundleIdentifier' supervibes.local.json)
+                DEV_TEAM=$(jq -r '.teamId' supervibes.local.json)
+                DEVICE_UDID=$(jq -r '.deviceUDID' supervibes.local.json)
+                SELECTED_DEVICE_NAME=$(jq -r '.deviceName' supervibes.local.json)
+                SIMULATOR_ID=$(jq -r '.simulatorId' supervibes.local.json)
+                SELECTED_SIMULATOR_NAME=$(jq -r '.simulatorName' supervibes.local.json)
+            else
+                # Fallback to grep if jq not available
+                PROJECT_NAME=$(grep -o '"projectName"[[:space:]]*:[[:space:]]*"[^"]*"' supervibes.local.json | cut -d'"' -f4)
+                DISPLAY_NAME=$(grep -o '"displayName"[[:space:]]*:[[:space:]]*"[^"]*"' supervibes.local.json | cut -d'"' -f4)
+                BUNDLE_ID=$(grep -o '"bundleIdentifier"[[:space:]]*:[[:space:]]*"[^"]*"' supervibes.local.json | cut -d'"' -f4)
+                DEV_TEAM=$(grep -o '"teamId"[[:space:]]*:[[:space:]]*"[^"]*"' supervibes.local.json | cut -d'"' -f4)
+                DEVICE_UDID=$(grep -o '"deviceUDID"[[:space:]]*:[[:space:]]*"[^"]*"' supervibes.local.json | cut -d'"' -f4)
+                SELECTED_DEVICE_NAME=$(grep -o '"deviceName"[[:space:]]*:[[:space:]]*"[^"]*"' supervibes.local.json | cut -d'"' -f4)
+                SIMULATOR_ID=$(grep -o '"simulatorId"[[:space:]]*:[[:space:]]*"[^"]*"' supervibes.local.json | cut -d'"' -f4)
+                SELECTED_SIMULATOR_NAME=$(grep -o '"simulatorName"[[:space:]]*:[[:space:]]*"[^"]*"' supervibes.local.json | cut -d'"' -f4)
+            fi
+            
+            # Set other defaults
+            DEPLOYMENT_TARGET="$DEFAULT_DEPLOYMENT_TARGET"
+            SWIFT_VERSION="$DEFAULT_SWIFT_VERSION"
+            MARKETING_VERSION="$DEFAULT_MARKETING_VERSION"
+            PROJECT_VERSION="$DEFAULT_PROJECT_VERSION"
+            PROJECT_OVERVIEW="An iOS application built with SwiftUI."
+            PROJECTS_DIR="$(pwd)"
+            
+            shift
+            ;;
         --test)
             TEST_MODE=true
             shift
@@ -116,6 +160,7 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "  --test                    Quick test mode with random project name"
             echo "  --projects-dir=PATH       Specify custom projects directory"
+            echo "  --init                    Regenerate project config from supervibes.local.json"
             echo "  --update                  Update Supervibes to latest version"
             echo "  --uninstall              Uninstall Supervibes"
             echo "  --help, -h               Show this help message"
@@ -365,8 +410,8 @@ if [ ! -f "$TEMPLATE_FILE" ]; then
     exit 1
 fi
 
-# Skip interactive prompts in test mode
-if [ "$TEST_MODE" = false ]; then
+# Skip interactive prompts in test mode and init mode
+if [ "$TEST_MODE" = false ] && [ "$INIT_MODE" = false ]; then
     # Gather project information
     echo -e "${GREEN}New Project: $(pwd)${NC}"
     echo -e "───────────────────"
@@ -564,8 +609,12 @@ fi  # End of interactive prompts (TEST_MODE = false)
 # Create projects directory if it doesn't exist
 mkdir -p "$PROJECTS_DIR"
 
-# Create project directory  
-PROJECT_DIR="$PROJECTS_DIR/$PROJECT_NAME"
+# Set project directory based on mode
+if [ "$INIT_MODE" = true ]; then
+    PROJECT_DIR="$(pwd)"  # Use current directory for init mode
+else
+    PROJECT_DIR="$PROJECTS_DIR/$PROJECT_NAME"  # Use standard path for new projects
+fi
 
 echo ""
 echo -e "${GREEN}Configuration Summary${NC}"
@@ -591,6 +640,33 @@ echo ""
 # Save values for future use
 if [ "$TEST_MODE" = false ]; then
     save_values "$DEV_TEAM" "$DEVICE_UDID" "$SELECTED_DEVICE_NAME" "$SIMULATOR_ID" "$SELECTED_SIMULATOR_NAME"
+fi
+
+# Add confirmation for init mode
+if [ "$INIT_MODE" = true ]; then
+    echo ""
+    echo -e "${CYAN}🔄 Reinitializing project: $PROJECT_NAME${NC}"
+    echo ""
+    echo -e "${YELLOW}This will regenerate:${NC}"
+    echo "  • project.yml"
+    echo "  • scripts/ directory"
+    echo "  • CLAUDE.md"
+    echo "  • .claude/ directory"  
+    echo "  • .xcodeproj (via xcodegen)"
+    echo ""
+    echo -e "${GREEN}This will preserve:${NC}"
+    echo "  • $PROJECT_NAME/ (source code)"
+    echo "  • ${PROJECT_NAME}Tests/"
+    echo "  • ${PROJECT_NAME}UITests/"
+    echo "  • supervibes.local.json"
+    echo ""
+    echo -e "${YELLOW}Continue? (y/N):${NC} "
+    read -r confirm
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        echo -e "${CYAN}Init cancelled${NC}"
+        exit 0
+    fi
+    echo ""
 fi
 
 # Generate the file
@@ -644,6 +720,7 @@ cat > "$LOCAL_CONFIG" <<EOF
   "projectName": "$PROJECT_NAME",
   "displayName": "$DISPLAY_NAME",
   "bundleIdentifier": "$BUNDLE_ID",
+  "teamId": "$DEV_TEAM",
   "deviceUDID": "$SCRIPT_DEVICE_UDID",
   "deviceName": "$SCRIPT_DEVICE_NAME",
   "simulatorId": "$SCRIPT_SIMULATOR_ID",
@@ -844,6 +921,8 @@ fi
 if [ -d "$SCRIPT_DIR/claude-template" ]; then
     echo ""
     echo -e "${GREEN}Setting up Claude AI assistance...${NC}"
+    # Remove existing .claude folder if it exists to ensure clean replacement
+    rm -rf "$PROJECT_DIR/.claude"
     cp -r "$SCRIPT_DIR/claude-template" "$PROJECT_DIR/.claude"
     
     # Fetch XcodeGen docs and replace placeholder in xcodegen-config-specialist.md
@@ -888,7 +967,6 @@ if command -v xcodegen &> /dev/null; then
     add_project_to_json "$PROJECT_NAME" "$ABSOLUTE_PROJECT_PATH"
     echo -e "${GREEN}✓ Project added to tracking${NC}"
     echo -e "${GREEN}CD into ${YELLOW}$PROJECT_NAME${GREEN} and run: ${YELLOW}claude ${GREEN}to get started${NC}"
-    
 else
     echo -e "${RED}xcodegen is not installed.${NC}"
     echo "Install it with: brew install xcodegen"

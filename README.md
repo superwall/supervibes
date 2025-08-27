@@ -190,6 +190,20 @@ Generate a test project with a random name using saved settings:
 
 This requires running the interactive mode at least once to save your Team ID and device.
 
+### Init Mode
+
+Regenerate project configuration from an existing `supervibes.local.json` file:
+
+```bash
+supervibes --init
+```
+
+This mode allows you to:
+- Regenerate all project configuration files (project.yml, scripts, CLAUDE.md, etc.)
+- Preserve your source code files (Swift, assets, tests)
+- Update build settings or fix corrupted configuration
+- Useful when pulling a project from git or sharing projects between developers
+
 ### Command Line Options
 
 ```bash
@@ -198,6 +212,7 @@ supervibes [options]
 Options:
   --test                    # Quick test mode with random project name
   --projects-dir=PATH       # Specify custom projects directory
+  --init                    # Regenerate project config from supervibes.local.json
   --update                  # Update Supervibes to latest version
   --uninstall              # Uninstall Supervibes (with confirmation)
   --help, -h               # Show help message
@@ -205,6 +220,7 @@ Options:
 Examples:
   supervibes                # Interactive mode in current directory
   supervibes --test         # Create test project with random name
+  supervibes --init         # Regenerate project config (preserves source code)
   supervibes --update       # Update to latest version
   supervibes --uninstall    # Remove Supervibes from your system
 ```
