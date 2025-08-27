@@ -44,13 +44,9 @@ echo -e "${GREEN}Cloning Supervibes repository...${NC}"
 if ! git clone https://github.com/superwall/supervibes.git ~/.supervibes; then
     echo -e "${RED}Failed to clone repository${NC}"
     echo ""
-    echo "This is a private repository. Please ensure:"
-    echo "  1. You have access to the repository"
-    echo "  2. You're authenticated with GitHub"
-    echo ""
-    echo "Try running:"
-    echo "  gh auth login"
-    echo "Or setup SSH keys for GitHub"
+    echo "Please check your internet connection and try again."
+    echo "If the problem persists, you can manually clone:"
+    echo "  git clone https://github.com/superwall/supervibes.git ~/.supervibes"
     exit 1
 fi
 
