@@ -7,7 +7,7 @@ An opinionated Claude Code workflow to build native iOS apps in Swift, mostly wi
   /$$__  $$
  | $$  \__/ /$$   /$$ /$$$$$$$   /$$$$$$  /$$$$$$
  |  $$$$$$ | $$  | $$| $$__  $$ /$$__  $$| $$__  $$
-  \____  $$| $$  | $$| $$  \ $$| $$$$$$$$| $$  \__/
+  \____  $$| $$  | $$| $$  \ $$| $$$$$$$$| $$  \__/4
   /$$  \ $$| $$  | $$| $$  | $$| $$_____/| $$
  |  $$$$$$/|  $$$$$$/| $$$$$$$/|  $$$$$$$| $$  /$$  /$$|
   \______/  \______/ | $$____/  \_______/|__/ |__/ | $$|
@@ -190,14 +190,23 @@ Generate a test project with a random name using saved settings:
 
 This requires running the interactive mode at least once to save your Team ID and device.
 
-### Custom Projects Directory
-
-By default, projects are generated in `./projects`. You can specify a different directory:
+### Command Line Options
 
 ```bash
-./supervibes --projects-dir=/path/to/custom/directory
-# or
-./supervibes --projects-dir /path/to/custom/directory
+supervibes [options]
+
+Options:
+  --test                    # Quick test mode with random project name
+  --projects-dir=PATH       # Specify custom projects directory
+  --update                  # Update Supervibes to latest version
+  --uninstall              # Uninstall Supervibes (with confirmation)
+  --help, -h               # Show help message
+
+Examples:
+  supervibes                # Interactive mode in current directory
+  supervibes --test         # Create test project with random name
+  supervibes --update       # Update to latest version
+  supervibes --uninstall    # Remove Supervibes from your system
 ```
 
 ## Configuration

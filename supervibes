@@ -37,6 +37,59 @@ TEST_MODE=false
 # Process all arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --update)
+            echo -e "${CYAN}Updating Supervibes...${NC}"
+            echo ""
+            
+            # Check if we're in the installed location
+            if [ -d "$HOME/.supervibes/.git" ]; then
+                cd "$HOME/.supervibes"
+                echo -e "${GREEN}Pulling latest changes...${NC}"
+                if git pull; then
+                    echo -e "${GREEN}✓ Supervibes updated successfully!${NC}"
+                else
+                    echo -e "${RED}Failed to update. You can manually update with:${NC}"
+                    echo "  cd ~/.supervibes && git pull"
+                fi
+            else
+                echo -e "${YELLOW}Re-running installation script...${NC}"
+                curl -fsSL "https://raw.githubusercontent.com/superwall/supervibes/refs/heads/main/install.sh?$(date +%s)" | bash
+            fi
+            exit 0
+            ;;
+        --uninstall)
+            echo -e "${YELLOW}Uninstalling Supervibes...${NC}"
+            echo ""
+            
+            # Confirm uninstallation
+            echo -e "${YELLOW}This will remove:${NC}"
+            echo "  • ~/.supervibes (installation directory)"
+            echo "  • ~/.local/bin/supervibes (command)"
+            echo "  • ~/.supervibes-dev (development symlink, if exists)"
+            echo "  • ~/.local/bin/supervibes-dev (development command, if exists)"
+            echo ""
+            echo -e "${YELLOW}Are you sure? (y/N):${NC} "
+            read -r confirm
+            
+            if [[ "$confirm" =~ ^[Yy]$ ]]; then
+                # Remove installation
+                rm -rf ~/.supervibes 2>/dev/null && echo "  ✓ Removed ~/.supervibes"
+                rm -f ~/.local/bin/supervibes 2>/dev/null && echo "  ✓ Removed supervibes command"
+                
+                # Remove development installation if exists
+                rm -rf ~/.supervibes-dev 2>/dev/null && echo "  ✓ Removed development symlink"
+                rm -f ~/.local/bin/supervibes-dev 2>/dev/null && echo "  ✓ Removed supervibes-dev command"
+                
+                echo ""
+                echo -e "${GREEN}✓ Supervibes has been uninstalled${NC}"
+                echo ""
+                echo "Note: PATH modifications in ~/.zshrc or ~/.bashrc were not removed."
+                echo "You can manually remove the line: export PATH=\"\$HOME/.local/bin:\$PATH\""
+            else
+                echo -e "${CYAN}Uninstall cancelled${NC}"
+            fi
+            exit 0
+            ;;
         --test)
             TEST_MODE=true
             shift
@@ -55,9 +108,27 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             ;;
+        --help|-h)
+            echo "Supervibes - iOS Project Generator"
+            echo ""
+            echo "Usage: supervibes [options]"
+            echo ""
+            echo "Options:"
+            echo "  --test                    Quick test mode with random project name"
+            echo "  --projects-dir=PATH       Specify custom projects directory"
+            echo "  --update                  Update Supervibes to latest version"
+            echo "  --uninstall              Uninstall Supervibes"
+            echo "  --help, -h               Show this help message"
+            echo ""
+            echo "Examples:"
+            echo "  supervibes                    # Interactive mode in current directory"
+            echo "  supervibes --test             # Quick test project"
+            echo "  supervibes --update           # Update to latest version"
+            exit 0
+            ;;
         *)
             echo -e "${RED}Unknown option: $1${NC}"
-            echo "Usage: $0 [--test] [--projects-dir=/path/to/dir]"
+            echo "Usage: supervibes [--test] [--projects-dir=/path/to/dir] [--update] [--uninstall] [--help]"
             exit 1
             ;;
     esac
