@@ -25,6 +25,7 @@ Tests are only configured in the debug scheme for faster production builds:
 
 - Make changes to the Xcode project by updating `project.yml` and running `xcodegen generate`
 - The project uses XcodeGen for project generation - never edit the `.xcodeproj` directly
+- To open the project in Xcode: `scripts/xcode`
 - When you're done with a task, always run `scripts/run` to make sure it compiles and let the user test your work
 
 ## Project Overview

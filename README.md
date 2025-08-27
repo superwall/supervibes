@@ -45,7 +45,8 @@ projects/YourProject/
 │   ├── run                 # Build and run on device
 │   ├── install             # Install and run latest build
 │   ├── unit-test           # Run unit tests
-│   └── ui-test             # Run UI tests
+│   ├── ui-test             # Run UI tests
+│   └── xcode               # Open project in Xcode
 ├── CLAUDE.md                   # Project documentation for Claude AI
 └── .claude/                    # Claude AI configuration
     └── agents/                 # Specialized AI agents
@@ -62,6 +63,7 @@ All scripts are generated in the `scripts/` directory of your project:
 | `install`   | Installs and launches latest build | `--debug`, `--simulator` |
 | `unit-test` | Runs unit tests (debug scheme)     | -                        |
 | `ui-test`   | Runs UI tests (debug scheme)       | -                        |
+| `xcode`     | Opens project in Xcode             | -                        |
 
 **Flag descriptions:**
 
