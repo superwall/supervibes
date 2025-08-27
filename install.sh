@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Supervibes Installation Script
-# One-liner: curl -fsSL https://raw.githubusercontent.com/superwall/supervibes/main/supervibes-cli/install.sh | bash
+# One-liner: curl -fsSL "https://raw.githubusercontent.com/superwall/supervibes/main/supervibes-cli/install.sh?$(date +%s)" | bash
 
 set -e
 

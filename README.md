@@ -76,7 +76,7 @@ All scripts are generated in the `scripts/` directory of your project:
 Install Supervibes with one command:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/superwall/supervibes/main/install.sh | bash
+curl -fsSL "https://raw.githubusercontent.com/superwall/supervibes/main/supervibes-cli/install.sh?$(date +%s)" | bash
 ```
 
 Then restart your terminal or run:
