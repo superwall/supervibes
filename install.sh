@@ -12,17 +12,8 @@ YELLOW='\033[0;33m'
 CYAN='\033[0;96m'
 NC='\033[0m' # No Color
 
-echo -e "${CYAN}"
-echo '   ____                             _ __              '
-echo '  / __/__ _____  ___ _____  __(_) /  ___ ___         '
-echo ' _\ \/ // / _ \/ -_) __/| |/ / / _ \/ -_|_-<         '
-echo '/___/\_,_/ .__/\__/_/   |___/_/_.__/\__/___/         '
-echo '        /_/                                           '
-echo ''
-echo 'Made by Superwall.com'
-echo -e "${NC}"
 echo ""
-echo -e "${GREEN}Installing Supervibes CLI...${NC}"
+echo -e "${CYAN}Installing Supervibes CLI...${NC}"
 echo ""
 
 # Check if git is installed
