@@ -69,6 +69,14 @@ fi
 # Install and launch based on target
 if [ "$SDK_DIR" = "iphonesimulator" ]; then
     echo "📲 Installing app to simulator..."
+    
+    # Open Simulator.app if not already running
+    if ! pgrep -x "Simulator" > /dev/null; then
+        echo "Opening Simulator.app..."
+        open -a Simulator
+        sleep 2  # Give Simulator.app time to launch
+    fi
+    
     # Boot simulator if needed
     if [ "$SIMULATOR_ID" != "booted" ]; then
         xcrun simctl boot "$SIMULATOR_ID" 2>/dev/null || true
