@@ -1,6 +1,6 @@
 # Supervibes ⚡️
 
-An opinionated workflow for using Claude Code to build native swift iOS apps, mostly without (but definitely alongside) Xcode. Built by [Superwall](https://superwall.com).
+An opinionated Claude Code workflow to build native iOS apps in Swift, mostly without (but definitely alongside) Xcode. Built by [Superwall](https://superwall.com).
 
 ```
    /$$$$$$$
@@ -68,22 +68,6 @@ All scripts are generated in the `scripts/` directory of your project:
 - `--debug` - Uses debug configuration with test support
 - `--simulator` - Targets iOS simulator instead of physical device
 - Flags can be combined: `scripts/run --debug --simulator`
-
-## Installation
-
-### Quick Install
-
-Install Supervibes with one command:
-
-```bash
-curl -fsSL "https://raw.githubusercontent.com/superwall/supervibes/refs/heads/main/install.sh?$(date +%s)" | bash
-```
-
-Then restart your terminal or run:
-
-```bash
-source ~/.zshrc  # or ~/.bashrc for bash
-```
 
 ### Prerequisites
 
