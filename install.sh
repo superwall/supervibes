@@ -18,12 +18,10 @@ BRANCH="main"
 BASE_URL="https://raw.githubusercontent.com/$GITHUB_REPO/$BRANCH/supervibes-cli"
 
 echo -e "${CYAN}"
-echo "   ____                             _ __              "
-echo "  / __/__ _____  ___ _____  __(_) /  ___ ___         "
-echo " _\ \/ // / _ \/ -_) __/| |/ / / _ \/ -_|_-<         "
-echo "/___/\_,_/ .__/\__/_/   |___/_/_.__/\__/___/         "
-echo "        /_/                                           "
+echo ''
+echo 'Made with ❤️ by Superwall.com'
 echo -e "${NC}"
+echo ""
 echo -e "${GREEN}Installing Supervibes CLI...${NC}"
 echo ""
 

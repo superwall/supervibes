@@ -3,31 +3,27 @@
 An opinionated workflow for using Claude Code to build native swift iOS apps, mostly without (but definitely alongside) Xcode. Built by [Superwall](https://superwall.com).
 
 ```
-    /$$$$$$$
-   /$$__  $$
-  | $$  \__/ /$$   /$$ /$$$$$$$   /$$$$$$  /$$$$$$
-  |  $$$$$$ | $$  | $$| $$__  $$ /$$__  $$| $$__  $$
-   \____  $$| $$  | $$| $$  \ $$| $$$$$$$$| $$  \__/
-   /$$  \ $$| $$  | $$| $$  | $$| $$_____/| $$
-  |  $$$$$$/|  $$$$$$/| $$$$$$$/|  $$$$$$$| $$
-   \______/  \______/ | $$____/  \_______/|__/
-                      | $$
-                      | $$
-                      |__/
-              /$$ /$$|
-             |__/| $$|
-   /$$    /$$ /$$| $$$$$$$ | $$$$$$   /$$$$$$$
-  |  $$  /$$/| $$| $$__  $$| $$__  $$ /$$_____/
-   \  $$/$$/ | $$| $$  \ $$| $$$$$$$$|  $$$$$$
-    \  $$$/  | $$| $$  | $$| $$_____/ \____  $$
-     \  $/   | $$| $$$$$$$/|  $$$$$$$ /$$$$$$$/
-      \_/    |__/|_______/  \_______/|_______/
+   /$$$$$$$
+  /$$__  $$
+ | $$  \__/ /$$   /$$ /$$$$$$$   /$$$$$$  /$$$$$$
+ |  $$$$$$ | $$  | $$| $$__  $$ /$$__  $$| $$__  $$
+  \____  $$| $$  | $$| $$  \ $$| $$$$$$$$| $$  \__/
+  /$$  \ $$| $$  | $$| $$  | $$| $$_____/| $$
+ |  $$$$$$/|  $$$$$$/| $$$$$$$/|  $$$$$$$| $$  /$$  /$$|
+  \______/  \______/ | $$____/  \_______/|__/ |__/ | $$|
+                     | $$           /$$    /$$ /$$ | $$$$$$$ | $$$$$$   /$$$$$$$
+                     | $$          |  $$  /$$/| $$ | $$__  $$| $$__  $$ /$$_____/
+                     |__/           \  $$/$$/ | $$ | $$  \ $$| $$$$$$$$|  $$$$$$
+                                     \  $$$/  | $$ | $$  | $$| $$_____/ \____  $$
+                                      \  $/   | $$ | $$$$$$$/|  $$$$$$$ /$$$$$$$/
+                                       \_/    |__/ |_______/  \_______/|_______/
+
 ```
 
 ## Features
 
 - 🚀 **Quick Setup** - Generate a complete iOS project in seconds
-- 📱 **Build to Device** - Automatically builds to connected iOS devices 
+- 📱 **Build to Device** - Automatically builds to connected iOS devices
 - 🎨 **SwiftUI Templates** - Modern SwiftUI app structure out of the box
 - 🛠 **Build Scripts** - Scripts for building, running, and testing from the terminal
 - 🧪 **Test Configuration** - Separate schemes for development with unit and UI tests
@@ -45,11 +41,11 @@ projects/YourProject/
 ├── YourProjectTests/           # Unit tests
 ├── YourProjectUITests/         # UI tests
 ├── scripts/                    # Automation scripts
-│   ├── build.sh               # Build only
-│   ├── run.sh                 # Build and run on device
-│   ├── install.sh             # Install and run latest build
-│   ├── unit-test.sh           # Run unit tests
-│   └── ui-test.sh             # Run UI tests
+│   ├── build               # Build only
+│   ├── run                 # Build and run on device
+│   ├── install             # Install and run latest build
+│   ├── unit-test           # Run unit tests
+│   └── ui-test             # Run UI tests
 ├── CLAUDE.md                   # Project documentation for Claude AI
 └── .claude/                    # Claude AI configuration
     └── agents/                 # Specialized AI agents
@@ -59,18 +55,19 @@ projects/YourProject/
 
 All scripts are generated in the `scripts/` directory of your project:
 
-| Script | Description | Flags |
-|--------|-------------|-------|
-| `build.sh` | Builds the project | `--debug`, `--simulator` |
-| `run.sh` | Builds and runs the app | `--debug`, `--simulator` |
-| `install.sh` | Installs and launches latest build | `--debug`, `--simulator` |
-| `unit-test.sh` | Runs unit tests (debug scheme) | - |
-| `ui-test.sh` | Runs UI tests (debug scheme) | - |
+| Script      | Description                        | Flags                    |
+| ----------- | ---------------------------------- | ------------------------ |
+| `build`     | Builds the project                 | `--debug`, `--simulator` |
+| `run`       | Builds and runs the app            | `--debug`, `--simulator` |
+| `install`   | Installs and launches latest build | `--debug`, `--simulator` |
+| `unit-test` | Runs unit tests (debug scheme)     | -                        |
+| `ui-test`   | Runs UI tests (debug scheme)       | -                        |
 
 **Flag descriptions:**
+
 - `--debug` - Uses debug configuration with test support
 - `--simulator` - Targets iOS simulator instead of physical device
-- Flags can be combined: `./run.sh --debug --simulator`
+- Flags can be combined: `scripts/run --debug --simulator`
 
 ## Installation
 
@@ -83,6 +80,7 @@ curl -fsSL https://raw.githubusercontent.com/superwall/supervibes/main/install.s
 ```
 
 Then restart your terminal or run:
+
 ```bash
 source ~/.zshrc  # or ~/.bashrc for bash
 ```
@@ -302,6 +300,7 @@ rm -rf ~/.supervibes ~/.local/bin/supervibes
 ```
 
 For development version:
+
 ```bash
 rm -rf ~/.supervibes-dev ~/.local/bin/supervibes-dev
 ```
