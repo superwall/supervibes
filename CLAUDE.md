@@ -23,7 +23,7 @@ The system uses a template-based approach:
 
 ### Generate a new iOS project
 ```bash
-./generate.sh
+./supervibes
 ```
 This will:
 1. Prompt for project details (name, bundle ID, team ID)

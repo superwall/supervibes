@@ -13,9 +13,31 @@ DEFAULT_DEPLOYMENT_TARGET="18.0"
 DEFAULT_MARKETING_VERSION="1.0.0"
 DEFAULT_PROJECT_VERSION="1"
 DEFAULT_SWIFT_VERSION="6.1.2"
+DEFAULT_PROJECTS_DIR="./projects"
 
 # Storage file for last used values
 SUPERVIBES_JSON="supervibes.json"
+
+# Parse command line arguments
+PROJECTS_DIR="$DEFAULT_PROJECTS_DIR"
+for arg in "$@"; do
+    case $arg in
+        --projects-dir=*)
+            PROJECTS_DIR="${arg#*=}"
+            shift
+            ;;
+        --projects-dir)
+            shift
+            if [ -n "$1" ] && [[ ! "$1" =~ ^-- ]]; then
+                PROJECTS_DIR="$1"
+                shift
+            else
+                echo -e "${RED}Error: --projects-dir requires a directory path${NC}"
+                exit 1
+            fi
+            ;;
+    esac
+done
 
 # Arrays for random name generation
 COLORS=("red" "blue" "green" "yellow" "purple" "orange" "pink" "cyan" "magenta" "lime")
@@ -382,10 +404,10 @@ fi
 fi  # End of interactive prompts (TEST_MODE = false)
 
 # Create projects directory if it doesn't exist
-mkdir -p ./projects
+mkdir -p "$PROJECTS_DIR"
 
-# Create project directory
-PROJECT_DIR="./projects/$PROJECT_NAME"
+# Create project directory  
+PROJECT_DIR="$PROJECTS_DIR/$PROJECT_NAME"
 
 echo ""
 echo -e "${GREEN}Configuration Summary${NC}"

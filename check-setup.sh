@@ -168,7 +168,7 @@ if [ $MISSING_DEPS -eq 0 ]; then
     echo -e "${GREEN}✓ All required dependencies are installed!${NC}"
     echo ""
     echo "You're ready to use Supervibes! Run:"
-    echo -e "${CYAN}./generate.sh${NC}"
+    echo -e "${CYAN}./supervibes${NC}"
 else
     echo -e "${RED}✗ Missing $MISSING_DEPS required dependencies${NC}"
     echo ""

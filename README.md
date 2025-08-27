@@ -178,7 +178,7 @@ cd supervibes
 Run the generator and follow the prompts:
 
 ```bash
-./generate.sh
+./supervibes
 ```
 
 You'll be asked for:
@@ -195,10 +195,20 @@ You'll be asked for:
 Generate a test project with a random name using saved settings:
 
 ```bash
-./generate.sh --test
+./supervibes --test
 ```
 
 This requires running the interactive mode at least once to save your Team ID and device.
+
+### Custom Projects Directory
+
+By default, projects are generated in `./projects`. You can specify a different directory:
+
+```bash
+./supervibes --projects-dir=/path/to/custom/directory
+# or
+./supervibes --projects-dir /path/to/custom/directory
+```
 
 ## Configuration
 
