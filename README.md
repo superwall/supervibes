@@ -283,7 +283,7 @@ If you want to contribute to Supervibes or run the development version:
 ```bash
 # Clone the repository
 git clone https://github.com/superwall/supervibes.git
-cd supervibes/supervibes-cli
+cd supervibes
 
 # Run the development setup
 ./setup-dev.sh

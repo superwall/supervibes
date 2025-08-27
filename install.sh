@@ -12,12 +12,12 @@ YELLOW='\033[0;33m'
 CYAN='\033[0;96m'
 NC='\033[0m' # No Color
 
-# GitHub repository details
-GITHUB_REPO="superwall/supervibes"
-BRANCH="main"
-BASE_URL="https://raw.githubusercontent.com/$GITHUB_REPO/$BRANCH"
-
 echo -e "${CYAN}"
+echo '   ____                             _ __              '
+echo '  / __/__ _____  ___ _____  __(_) /  ___ ___         '
+echo ' _\ \/ // / _ \/ -_) __/| |/ / / _ \/ -_|_-<         '
+echo '/___/\_,_/ .__/\__/_/   |___/_/_.__/\__/___/         '
+echo '        /_/                                           '
 echo ''
 echo 'Made by Superwall.com'
 echo -e "${NC}"
@@ -25,77 +25,40 @@ echo ""
 echo -e "${GREEN}Installing Supervibes CLI...${NC}"
 echo ""
 
-# Create ~/.supervibes directory
-echo -e "${GREEN}Creating ~/.supervibes directory...${NC}"
-mkdir -p ~/.supervibes
+# Check if git is installed
+if ! command -v git &> /dev/null; then
+    echo -e "${RED}Error: git is not installed${NC}"
+    echo "Please install git first:"
+    echo "  xcode-select --install"
+    exit 1
+fi
 
-# Download all necessary files
-echo -e "${GREEN}Downloading Supervibes files...${NC}"
+# Remove old installation if exists
+if [ -d ~/.supervibes ]; then
+    echo -e "${YELLOW}Removing old installation...${NC}"
+    rm -rf ~/.supervibes
+fi
 
-# Core files to download
-FILES=(
-    "supervibes"
-    "project-template.yml"
-    "check-setup.sh"
-    "claude-template.md"
-)
-
-# Download each file
-for file in "${FILES[@]}"; do
-    echo -e "  Downloading $file..."
-    if ! curl -fsSL "$BASE_URL/$file" -o ~/.supervibes/"$file"; then
-        echo -e "${RED}Failed to download $file${NC}"
-        exit 1
-    fi
-done
+# Clone the repository
+echo -e "${GREEN}Cloning Supervibes repository...${NC}"
+if ! git clone https://github.com/superwall/supervibes.git ~/.supervibes; then
+    echo -e "${RED}Failed to clone repository${NC}"
+    echo ""
+    echo "This is a private repository. Please ensure:"
+    echo "  1. You have access to the repository"
+    echo "  2. You're authenticated with GitHub"
+    echo ""
+    echo "Try running:"
+    echo "  gh auth login"
+    echo "Or setup SSH keys for GitHub"
+    exit 1
+fi
 
 # Make scripts executable
 chmod +x ~/.supervibes/supervibes
 chmod +x ~/.supervibes/check-setup.sh
 
-# Download template directories
-echo -e "${GREEN}Downloading template directories...${NC}"
-
-# Create directories
-mkdir -p ~/.supervibes/scripts-template
-mkdir -p ~/.supervibes/claude-template/agents
-
-# Download script templates
-SCRIPT_TEMPLATES=(
-    "build-template.sh"
-    "install-template.sh"
-    "run-template.sh"
-    "ui-test-template.sh"
-    "unit-test-template.sh"
-)
-
-for template in "${SCRIPT_TEMPLATES[@]}"; do
-    echo -e "  Downloading scripts-template/$template..."
-    if ! curl -fsSL "$BASE_URL/scripts-template/$template" -o ~/.supervibes/scripts-template/"$template"; then
-        echo -e "${RED}Failed to download $template${NC}"
-        exit 1
-    fi
-done
-
-# Download Claude templates
-CLAUDE_AGENTS=(
-    "settings.local.json"
-)
-
-CLAUDE_AGENT_FILES=(
-    "swift-test-writer.md"
-    "xcodegen-config-specialist.md"
-)
-
-# Download settings.local.json
-echo -e "  Downloading claude-template/settings.local.json..."
-curl -fsSL "$BASE_URL/claude-template/settings.local.json" -o ~/.supervibes/claude-template/settings.local.json 2>/dev/null || true
-
-# Download agent files
-for agent in "${CLAUDE_AGENT_FILES[@]}"; do
-    echo -e "  Downloading claude-template/agents/$agent..."
-    curl -fsSL "$BASE_URL/claude-template/agents/$agent" -o ~/.supervibes/claude-template/agents/"$agent" 2>/dev/null || true
-done
+echo -e "${GREEN}✓ Repository cloned successfully${NC}"
 
 # Create bin directory
 mkdir -p ~/.local/bin
@@ -205,5 +168,8 @@ echo ""
 echo "Installation directory: ~/.supervibes"
 echo "Configuration file: ~/.supervibes/supervibes.json"
 echo ""
-echo "To uninstall, run:"
+echo "To update supervibes:"
+echo -e "  ${YELLOW}cd ~/.supervibes && git pull${NC}"
+echo ""
+echo "To uninstall:"
 echo -e "  ${YELLOW}rm -rf ~/.supervibes ~/.local/bin/supervibes${NC}"
