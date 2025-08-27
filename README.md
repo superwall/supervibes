@@ -74,6 +74,19 @@ All scripts are generated in the `scripts/` directory of your project:
 
 ## Installation
 
+### Quick Install
+
+Install Supervibes with one command:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/superwall/supervibes/main/install.sh | bash
+```
+
+Then restart your terminal or run:
+```bash
+source ~/.zshrc  # or ~/.bashrc for bash
+```
+
 ### Prerequisites
 
 Before using Supervibes, ensure you have all the required tools installed.
@@ -81,10 +94,12 @@ Before using Supervibes, ensure you have all the required tools installed.
 **Quick check:** Run our setup checker to see what's missing:
 
 ```bash
-./check-setup.sh
+supervibes-check  # After installation
+# or
+~/.supervibes/check-setup.sh  # Direct path
 ```
 
-#### Manual Installation
+#### Required Tools
 
 #### 1. **Xcode & Command Line Tools**
 
@@ -162,23 +177,16 @@ You'll need your Apple Developer Team ID. To find it:
 └────────────────────────────────┘
 ```
 
-### Clone the Repository
+## Getting Started
 
-Once all prerequisites are installed:
-
-```bash
-git clone https://github.com/superwall/supervibes.git
-cd supervibes
-```
-
-## Usage
+Once Supervibes is installed, you can use it from any directory:
 
 ### Interactive Mode
 
-Run the generator and follow the prompts:
+Navigate to where you want your project and run:
 
 ```bash
-./supervibes
+supervibes
 ```
 
 You'll be asked for:
@@ -269,6 +277,34 @@ This is an internal Superwall tool (for now)! Please implement the features you 
 ## License
 
 Private repository - Superwall internal use only.
+
+## Development Setup
+
+If you want to contribute to Supervibes or run the development version:
+
+```bash
+# Clone the repository
+git clone https://github.com/superwall/supervibes.git
+cd supervibes/supervibes-cli
+
+# Run the development setup
+./setup-dev.sh
+```
+
+This creates `supervibes-dev` command that runs from your development directory.
+
+## Uninstall
+
+To remove Supervibes:
+
+```bash
+rm -rf ~/.supervibes ~/.local/bin/supervibes
+```
+
+For development version:
+```bash
+rm -rf ~/.supervibes-dev ~/.local/bin/supervibes-dev
+```
 
 ---
 

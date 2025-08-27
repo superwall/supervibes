@@ -16,7 +16,19 @@ DEFAULT_SWIFT_VERSION="6.1.2"
 DEFAULT_PROJECTS_DIR="./projects"
 
 # Storage file for last used values
-SUPERVIBES_JSON="supervibes.json"
+# Check if running from installed location or development
+if [ -f "$HOME/.supervibes/supervibes.json" ]; then
+    SUPERVIBES_JSON="$HOME/.supervibes/supervibes.json"
+elif [ -f "$(dirname "$0")/supervibes.json" ]; then
+    SUPERVIBES_JSON="$(dirname "$0")/supervibes.json"
+else
+    # Create in the .supervibes directory
+    if [ -d "$HOME/.supervibes" ]; then
+        SUPERVIBES_JSON="$HOME/.supervibes/supervibes.json"
+    else
+        SUPERVIBES_JSON="$(dirname "$0")/supervibes.json"
+    fi
+fi
 
 # Parse command line arguments
 PROJECTS_DIR="$DEFAULT_PROJECTS_DIR"
@@ -211,20 +223,33 @@ if [ "$TEST_MODE" = true ]; then
     DEV_TEAM="$SAVED_TEAM_ID"
     DEVICE_UDID="$SAVED_DEVICE_UDID"
     SELECTED_DEVICE_NAME="$SAVED_DEVICE_NAME"
+    SIMULATOR_ID="$SAVED_SIMULATOR_ID"
+    SELECTED_SIMULATOR_NAME="$SAVED_SIMULATOR_NAME"
     DEPLOYMENT_TARGET="$DEFAULT_DEPLOYMENT_TARGET"
     SWIFT_VERSION="$DEFAULT_SWIFT_VERSION"
     MARKETING_VERSION="$DEFAULT_MARKETING_VERSION"
     PROJECT_VERSION="$DEFAULT_PROJECT_VERSION"
     PROJECT_OVERVIEW="A test iOS application built with SwiftUI."
     
-    if [ -z "$DEV_TEAM" ] || [ -z "$DEVICE_UDID" ]; then
-        echo -e "${RED}Error: No saved Team ID or Device found!${NC}"
+    if [ -z "$DEV_TEAM" ]; then
+        echo -e "${RED}Error: No saved Team ID found!${NC}"
+        echo "Please run the generator normally first to save your settings."
+        exit 1
+    fi
+    
+    # Check if we have either a device or simulator saved
+    if [ -z "$DEVICE_UDID" ] && [ -z "$SIMULATOR_ID" ]; then
+        echo -e "${RED}Error: No saved Device or Simulator found!${NC}"
         echo "Please run the generator normally first to save your settings."
         exit 1
     fi
     
     echo -e "Using Team ID: ${YELLOW}$DEV_TEAM${NC}"
-    echo -e "Using Device: ${YELLOW}$SELECTED_DEVICE_NAME${NC}"
+    if [ -n "$DEVICE_UDID" ]; then
+        echo -e "Using Device: ${YELLOW}$SELECTED_DEVICE_NAME${NC}"
+    else
+        echo -e "Using Simulator: ${YELLOW}$SELECTED_SIMULATOR_NAME${NC}"
+    fi
     echo ""
 else
     # Header for normal mode
@@ -256,25 +281,28 @@ else
     echo ""
 fi
 
+# Determine script directory
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 # Check prerequisites
-if [ -f "./check-setup.sh" ]; then
-    if ! ./check-setup.sh --brief; then
+if [ -f "$SCRIPT_DIR/check-setup.sh" ]; then
+    if ! "$SCRIPT_DIR/check-setup.sh" --brief; then
         exit 1
     fi
 fi
 
 # Check if template exists
-TEMPLATE_FILE="project-template.yml"
+TEMPLATE_FILE="$SCRIPT_DIR/project-template.yml"
 if [ ! -f "$TEMPLATE_FILE" ]; then
     echo -e "${RED}Error: Template file '$TEMPLATE_FILE' not found!${NC}"
-    echo "Please ensure the template file exists in the current directory."
+    echo "Please ensure the template file exists in the supervibes directory."
     exit 1
 fi
 
 # Skip interactive prompts in test mode
 if [ "$TEST_MODE" = false ]; then
     # Gather project information
-    echo -e "${GREEN}Project Information${NC}"
+    echo -e "${GREEN}New Project: $(pwd)${NC}"
     echo -e "───────────────────"
 
 # Project name (required - alphanumeric only)
@@ -560,15 +588,15 @@ EOF
 echo -e "${GREEN}✓ Configuration saved to supervibes.local.json${NC}"
     
 # Check if scripts-template folder exists
-if [ -d "scripts-template" ]; then
+if [ -d "$SCRIPT_DIR/scripts-template" ]; then
     # Create scripts directory in project
     mkdir -p "$PROJECT_DIR/scripts"
     
     # Copy all template scripts without modification
-    for template in scripts-template/*-template.sh; do
+    for template in "$SCRIPT_DIR"/scripts-template/*-template.sh; do
         if [ -f "$template" ]; then
-            # Get the base name without -template suffix
-            script_name=$(basename "$template" | sed 's/-template//')
+            # Get the base name without -template suffix and .sh extension
+            script_name=$(basename "$template" | sed 's/-template\.sh$//')
             target="$PROJECT_DIR/scripts/$script_name"
             
             # Simply copy the template as-is
@@ -588,17 +616,17 @@ if [ -d "scripts-template" ]; then
         echo -e "${CYAN}No physical device configured${NC}"
     fi
 else
-    echo -e "${YELLOW}Warning: scripts-template folder not found${NC}"
+    echo -e "${YELLOW}Warning: scripts-template folder not found in $SCRIPT_DIR${NC}"
 fi
 
 echo ""
 echo -e "Next steps:"
 echo -e "1. Review the generated ${YELLOW}$OUTPUT_FILE${NC}"
-echo -e "2. Run: ${YELLOW}cd $PROJECT_DIR && scripts/build.sh${NC} to build only"
-echo -e "3. Run: ${YELLOW}cd $PROJECT_DIR && scripts/run.sh${NC} to build and run"
-echo -e "4. Run: ${YELLOW}cd $PROJECT_DIR && scripts/install.sh${NC} to install the last build"
-echo -e "5. Run: ${YELLOW}cd $PROJECT_DIR && scripts/unit-test.sh${NC} to run unit tests"
-echo -e "6. Run: ${YELLOW}cd $PROJECT_DIR && scripts/ui-test.sh${NC} to run UI tests"
+echo -e "2. Run: ${YELLOW}cd $PROJECT_DIR && scripts/build${NC} to build only"
+echo -e "3. Run: ${YELLOW}cd $PROJECT_DIR && scripts/run${NC} to build and run"
+echo -e "4. Run: ${YELLOW}cd $PROJECT_DIR && scripts/install${NC} to install the last build"
+echo -e "5. Run: ${YELLOW}cd $PROJECT_DIR && scripts/unit-test${NC} to run unit tests"
+echo -e "6. Run: ${YELLOW}cd $PROJECT_DIR && scripts/ui-test${NC} to run UI tests"
 if [ "$SCRIPT_DEVICE_TYPE" = "simulator" ]; then
     echo -e ""
     echo -e "${CYAN}Note: Add --simulator flag to use simulator instead of default${NC}"
@@ -738,19 +766,19 @@ EOF
 echo -e "${GREEN}✓ Project structure created!${NC}"
 
 # Copy claude-template.md as CLAUDE.md if it exists
-if [ -f "claude-template.md" ]; then
+if [ -f "$SCRIPT_DIR/claude-template.md" ]; then
     echo ""
     echo -e "${GREEN}Creating CLAUDE.md documentation...${NC}"
     # Copy and replace the ProjectOverview placeholder
-    awk -v overview="$PROJECT_OVERVIEW" '{gsub(/<ProjectOverview\/>/, overview)}1' "claude-template.md" > "$PROJECT_DIR/CLAUDE.md"
+    awk -v overview="$PROJECT_OVERVIEW" '{gsub(/<ProjectOverview\/>/, overview)}1' "$SCRIPT_DIR/claude-template.md" > "$PROJECT_DIR/CLAUDE.md"
     echo -e "${GREEN}✓ CLAUDE.md created!${NC}"
 fi
 
 # Copy claude-template folder as .claude if it exists
-if [ -d "claude-template" ]; then
+if [ -d "$SCRIPT_DIR/claude-template" ]; then
     echo ""
     echo -e "${GREEN}Setting up Claude AI assistance...${NC}"
-    cp -r claude-template "$PROJECT_DIR/.claude"
+    cp -r "$SCRIPT_DIR/claude-template" "$PROJECT_DIR/.claude"
     
     # Fetch XcodeGen docs and replace placeholder in xcodegen-config-specialist.md
     if [ -f "$PROJECT_DIR/.claude/agents/xcodegen-config-specialist.md" ]; then
@@ -784,20 +812,17 @@ fi
 echo ""
 if command -v xcodegen &> /dev/null; then
     echo -e "${GREEN}Running xcodegen...${NC}"
+    # Get absolute path before changing directory
+    ABSOLUTE_PROJECT_PATH=$(cd "$PROJECT_DIR" && pwd)
     cd "$PROJECT_DIR"
     xcodegen generate
     echo -e "${GREEN}✓ Xcode project generated!${NC}"
     
-    # Get absolute path and add project to tracking
-    ABSOLUTE_PROJECT_PATH=$(cd "$PROJECT_DIR" && pwd)
+    # Add project to tracking
     add_project_to_json "$PROJECT_NAME" "$ABSOLUTE_PROJECT_PATH"
     echo -e "${GREEN}✓ Project added to tracking${NC}"
+    echo -e "${GREEN}CD into ${YELLOW}$PROJECT_NAME${GREEN} and run: ${YELLOW}claude ${GREEN}to get started${NC}"
     
-    if [ -n "$PROJECT_OVERVIEW" ] && [ "$PROJECT_OVERVIEW" != "An iOS application built with SwiftUI." ]; then
-        claude --permission-mode=acceptEdits "build the following: $PROJECT_OVERVIEW"
-    else
-        claude --permission-mode=acceptEdits
-    fi
 else
     echo -e "${RED}xcodegen is not installed.${NC}"
     echo "Install it with: brew install xcodegen"
