@@ -20,10 +20,17 @@ SUPERVIBES_JSON="supervibes.json"
 
 # Parse command line arguments
 PROJECTS_DIR="$DEFAULT_PROJECTS_DIR"
-for arg in "$@"; do
-    case $arg in
+TEST_MODE=false
+
+# Process all arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --test)
+            TEST_MODE=true
+            shift
+            ;;
         --projects-dir=*)
-            PROJECTS_DIR="${arg#*=}"
+            PROJECTS_DIR="${1#*=}"
             shift
             ;;
         --projects-dir)
@@ -35,6 +42,11 @@ for arg in "$@"; do
                 echo -e "${RED}Error: --projects-dir requires a directory path${NC}"
                 exit 1
             fi
+            ;;
+        *)
+            echo -e "${RED}Unknown option: $1${NC}"
+            echo "Usage: $0 [--test] [--projects-dir=/path/to/dir]"
+            exit 1
             ;;
     esac
 done
@@ -71,15 +83,69 @@ save_values() {
     local sim_id="$4"
     local sim_name="$5"
     
-    cat > "$SUPERVIBES_JSON" << EOF
+    # Load existing projects if file exists
+    local projects_json="[]"
+    if [ -f "$SUPERVIBES_JSON" ]; then
+        if command -v jq &> /dev/null; then
+            projects_json=$(jq '.projects // []' "$SUPERVIBES_JSON" 2>/dev/null || echo "[]")
+        fi
+    fi
+    
+    # Create the JSON with projects array preserved
+    if command -v jq &> /dev/null; then
+        echo "{}" | jq \
+            --arg teamId "$team_id" \
+            --arg deviceUdid "$device_udid" \
+            --arg deviceName "$device_name" \
+            --arg simulatorId "$sim_id" \
+            --arg simulatorName "$sim_name" \
+            --argjson projects "$projects_json" \
+            '{
+                teamId: $teamId,
+                deviceUdid: $deviceUdid,
+                deviceName: $deviceName,
+                simulatorId: $simulatorId,
+                simulatorName: $simulatorName,
+                projects: $projects
+            }' > "$SUPERVIBES_JSON"
+    else
+        # Fallback without jq (doesn't preserve projects)
+        cat > "$SUPERVIBES_JSON" << EOF
 {
   "teamId": "$team_id",
   "deviceUdid": "$device_udid",
   "deviceName": "$device_name",
   "simulatorId": "$sim_id",
-  "simulatorName": "$sim_name"
+  "simulatorName": "$sim_name",
+  "projects": []
 }
 EOF
+    fi
+}
+
+# Function to add a project to supervibes.json
+add_project_to_json() {
+    local project_name="$1"
+    local project_path="$2"
+    
+    if command -v jq &> /dev/null; then
+        # Load existing JSON or create new structure
+        if [ -f "$SUPERVIBES_JSON" ]; then
+            # Add project to existing file
+            jq --arg name "$project_name" \
+               --arg path "$project_path" \
+               '.projects = (.projects // []) + [{name: $name, path: $path}]' \
+               "$SUPERVIBES_JSON" > "$SUPERVIBES_JSON.tmp" && \
+            mv "$SUPERVIBES_JSON.tmp" "$SUPERVIBES_JSON"
+        else
+            # Create new file with just the project
+            echo '{"projects": []}' | jq --arg name "$project_name" \
+                                         --arg path "$project_path" \
+                                         '.projects += [{name: $name, path: $path}]' > "$SUPERVIBES_JSON"
+        fi
+    else
+        echo -e "${YELLOW}Warning: jq not installed, project tracking not available${NC}"
+    fi
 }
 
 # Function to prompt for input with default value
@@ -122,10 +188,8 @@ validate_bundle_id() {
     return 0
 }
 
-# Check for --test flag
-TEST_MODE=false
-if [[ "$1" == "--test" ]]; then
-    TEST_MODE=true
+# Check for test mode and generate random project name if needed
+if [ "$TEST_MODE" = true ]; then
     # Generate random project name
     COLOR=${COLORS[$RANDOM % ${#COLORS[@]}]}
     ANIMAL=${ANIMALS[$RANDOM % ${#ANIMALS[@]}]}
@@ -723,6 +787,12 @@ if command -v xcodegen &> /dev/null; then
     cd "$PROJECT_DIR"
     xcodegen generate
     echo -e "${GREEN}✓ Xcode project generated!${NC}"
+    
+    # Get absolute path and add project to tracking
+    ABSOLUTE_PROJECT_PATH=$(cd "$PROJECT_DIR" && pwd)
+    add_project_to_json "$PROJECT_NAME" "$ABSOLUTE_PROJECT_PATH"
+    echo -e "${GREEN}✓ Project added to tracking${NC}"
+    
     if [ -n "$PROJECT_OVERVIEW" ] && [ "$PROJECT_OVERVIEW" != "An iOS application built with SwiftUI." ]; then
         claude --permission-mode=acceptEdits "build the following: $PROJECT_OVERVIEW"
     else
