@@ -9,10 +9,10 @@ CYAN='\033[0;96m'  # Bright cyan for Supervibes branding (#75FFF1)
 NC='\033[0m' # No Color
 
 # Default values
-DEFAULT_DEPLOYMENT_TARGET="17.0"
+DEFAULT_DEPLOYMENT_TARGET="18.0"
 DEFAULT_MARKETING_VERSION="1.0.0"
 DEFAULT_PROJECT_VERSION="1"
-DEFAULT_SWIFT_VERSION="5.0"
+DEFAULT_SWIFT_VERSION="6.1.2"
 
 # Storage file for last used values
 SUPERVIBES_JSON="supervibes.json"
@@ -365,15 +365,9 @@ else
     fi
 fi
 
-echo ""
-echo -e "${GREEN}Version Information${NC}"
-echo -e "───────────────────"
-
-# Optional fields with defaults
-prompt_with_default "iOS Deployment target" "$DEFAULT_DEPLOYMENT_TARGET" "DEPLOYMENT_TARGET"
-prompt_with_default "Swift version" "$DEFAULT_SWIFT_VERSION" "SWIFT_VERSION"
-
-# Use defaults for marketing and project versions
+# Use defaults for all version information
+DEPLOYMENT_TARGET="$DEFAULT_DEPLOYMENT_TARGET"
+SWIFT_VERSION="$DEFAULT_SWIFT_VERSION"
 MARKETING_VERSION="$DEFAULT_MARKETING_VERSION"
 PROJECT_VERSION="$DEFAULT_PROJECT_VERSION"
 
@@ -707,7 +701,11 @@ if command -v xcodegen &> /dev/null; then
     cd "$PROJECT_DIR"
     xcodegen generate
     echo -e "${GREEN}✓ Xcode project generated!${NC}"
-    cd ../..
+    if [ -n "$PROJECT_OVERVIEW" ] && [ "$PROJECT_OVERVIEW" != "An iOS application built with SwiftUI." ]; then
+        claude --permission-mode=acceptEdits "build the following: $PROJECT_OVERVIEW"
+    else
+        claude --permission-mode=acceptEdits
+    fi
 else
     echo -e "${RED}xcodegen is not installed.${NC}"
     echo "Install it with: brew install xcodegen"
