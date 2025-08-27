@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Supervibes Installation Script
-# One-liner: curl -fsSL "https://raw.githubusercontent.com/superwall/supervibes/refs/heads/main/supervibes-cli/install.sh?$(date +%s)" | bash
+# One-liner: curl -fsSL "https://raw.githubusercontent.com/superwall/supervibes/refs/heads/main/install.sh?$(date +%s)" | bash
 
 set -e
 
@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 # GitHub repository details
 GITHUB_REPO="superwall/supervibes"
 BRANCH="main"
-BASE_URL="https://raw.githubusercontent.com/$GITHUB_REPO/$BRANCH/supervibes-cli"
+BASE_URL="https://raw.githubusercontent.com/$GITHUB_REPO/$BRANCH"
 
 echo -e "${CYAN}"
 echo ''
@@ -115,7 +115,7 @@ SUPERVIBES_CLI="$HOME/.supervibes/supervibes"
 if [ ! -f "$SUPERVIBES_CLI" ]; then
     echo "Error: Supervibes CLI not found at $SUPERVIBES_CLI"
     echo "Please run the installation script again:"
-    echo "  curl -fsSL \"https://raw.githubusercontent.com/superwall/supervibes/refs/heads/main/supervibes-cli/install.sh?\$(date +%s)\" | bash"
+    echo "  curl -fsSL \"https://raw.githubusercontent.com/superwall/supervibes/refs/heads/main/install.sh?\$(date +%s)\" | bash"
     exit 1
 fi
 
