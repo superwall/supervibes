@@ -30,6 +30,49 @@ An opinionated Claude Code workflow to build native iOS apps in Swift, mostly wi
 - 🎯 **XcodeGen Integration** - Create files outside of Xcode while maintaining interoperability
 - 🤖 **Claude AI Ready** - Battle tested Agents & CLAUDE.md files
 
+## Quick Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/superwall/supervibes/refs/heads/main/install.sh | bash
+```
+
+## Usage
+
+### Create a new project
+```bash
+supervibes                 # Interactive mode - prompts for all details
+supervibes --test          # Quick test mode - uses saved settings
+```
+
+### Regenerate project configuration
+```bash
+supervibes --init          # Regenerate config from supervibes.local.json
+                          # (preserves source code and assets)
+```
+
+### Maintain Supervibes
+```bash
+supervibes --update        # Update to latest version
+supervibes --uninstall     # Remove Supervibes from your system
+supervibes --help          # Show all available commands
+```
+
+### Working with generated projects
+```bash
+cd YourProject
+scripts/build              # Build the app
+scripts/run                # Build and run on device/simulator
+scripts/install            # Install and launch latest build
+scripts/xcode              # Open in Xcode
+scripts/unit-test          # Run unit tests
+scripts/ui-test            # Run UI tests
+
+# Use flags for different configurations
+scripts/run --debug        # Debug configuration with test support
+scripts/run --simulator    # Target iOS simulator
+scripts/run --debug --simulator  # Combine flags
+```
+
 ## Generated Project Structure
 
 ```
