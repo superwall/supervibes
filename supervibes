@@ -783,8 +783,9 @@ echo -e "${GREEN}Creating initial project structure...${NC}"
 # Create main app source directory
 mkdir -p "$PROJECT_DIR/$PROJECT_NAME"
 
-# Create main app file
-cat > "$PROJECT_DIR/$PROJECT_NAME/${PROJECT_NAME}App.swift" << EOF
+# Only create main app file if NOT in init mode or file doesn't exist
+if [ "$INIT_MODE" != true ] || [ ! -f "$PROJECT_DIR/$PROJECT_NAME/${PROJECT_NAME}App.swift" ]; then
+    cat > "$PROJECT_DIR/$PROJECT_NAME/${PROJECT_NAME}App.swift" << EOF
 import SwiftUI
 
 @main
@@ -796,14 +797,17 @@ struct ${DISPLAY_NAME}App: App {
   }
 }
 EOF
+fi
 
-    # Create Assets.xcassets directory structure
-    mkdir -p "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets"
-    mkdir -p "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/AccentColor.colorset"
-    mkdir -p "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/AppIcon.appiconset"
-    
-    # Create Contents.json for Assets.xcassets
-    cat > "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/Contents.json" << 'EOF'
+    # Only create Assets.xcassets if NOT in init mode (preserve user's assets)
+    if [ "$INIT_MODE" != true ]; then
+        # Create Assets.xcassets directory structure
+        mkdir -p "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets"
+        mkdir -p "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/AccentColor.colorset"
+        mkdir -p "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/AppIcon.appiconset"
+        
+        # Create Contents.json for Assets.xcassets
+        cat > "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/Contents.json" << 'EOF'
 {
   "info": {
     "author": "xcode",
@@ -811,9 +815,9 @@ EOF
   }
 }
 EOF
-    
-    # Create AccentColor.colorset Contents.json with cyan color (#75FFF1)
-    cat > "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/AccentColor.colorset/Contents.json" << 'EOF'
+        
+        # Create AccentColor.colorset Contents.json with cyan color (#75FFF1)
+        cat > "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/AccentColor.colorset/Contents.json" << 'EOF'
 {
   "colors": [
     {
@@ -835,9 +839,9 @@ EOF
   }
 }
 EOF
-    
-    # Create AppIcon.appiconset Contents.json
-    cat > "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/AppIcon.appiconset/Contents.json" << 'EOF'
+        
+        # Create AppIcon.appiconset Contents.json
+        cat > "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/AppIcon.appiconset/Contents.json" << 'EOF'
 {
   "images": [
     {
@@ -853,9 +857,16 @@ EOF
   }
 }
 EOF
+        
+        # Copy default icon.png if available
+        if [ -f "$SCRIPT_DIR/icon.png" ]; then
+            cp "$SCRIPT_DIR/icon.png" "$PROJECT_DIR/$PROJECT_NAME/Assets.xcassets/AppIcon.appiconset/icon.png"
+        fi
+    fi
     
-    # Create ContentView
-    cat > "$PROJECT_DIR/$PROJECT_NAME/ContentView.swift" << EOF
+    # Only create ContentView if NOT in init mode or file doesn't exist
+    if [ "$INIT_MODE" != true ] || [ ! -f "$PROJECT_DIR/$PROJECT_NAME/ContentView.swift" ]; then
+        cat > "$PROJECT_DIR/$PROJECT_NAME/ContentView.swift" << EOF
 import SwiftUI
 
 struct ContentView: View {
@@ -874,12 +885,15 @@ struct ContentView: View {
   ContentView()
 }
 EOF
+    fi
 
-    # Create test directories with sample tests
+    # Only create test files if NOT in init mode or files don't exist
     mkdir -p "$PROJECT_DIR/${PROJECT_NAME}Tests"
     # Use display name without spaces for module name
     MODULE_NAME=$(echo "$DISPLAY_NAME" | tr -d ' ')
-    cat > "$PROJECT_DIR/${PROJECT_NAME}Tests/${PROJECT_NAME}Tests.swift" << EOF
+    
+    if [ "$INIT_MODE" != true ] || [ ! -f "$PROJECT_DIR/${PROJECT_NAME}Tests/${PROJECT_NAME}Tests.swift" ]; then
+        cat > "$PROJECT_DIR/${PROJECT_NAME}Tests/${PROJECT_NAME}Tests.swift" << EOF
 import XCTest
 @testable import ${MODULE_NAME}
 
@@ -889,9 +903,12 @@ final class ${PROJECT_NAME}Tests: XCTestCase {
   }
 }
 EOF
+    fi
 
     mkdir -p "$PROJECT_DIR/${PROJECT_NAME}UITests"
-    cat > "$PROJECT_DIR/${PROJECT_NAME}UITests/${PROJECT_NAME}UITests.swift" << EOF
+    
+    if [ "$INIT_MODE" != true ] || [ ! -f "$PROJECT_DIR/${PROJECT_NAME}UITests/${PROJECT_NAME}UITests.swift" ]; then
+        cat > "$PROJECT_DIR/${PROJECT_NAME}UITests/${PROJECT_NAME}UITests.swift" << EOF
 import XCTest
 
 final class ${PROJECT_NAME}UITests: XCTestCase {
@@ -905,6 +922,7 @@ final class ${PROJECT_NAME}UITests: XCTestCase {
   }
 }
 EOF
+    fi
 
 echo -e "${GREEN}✓ Project structure created!${NC}"
 
